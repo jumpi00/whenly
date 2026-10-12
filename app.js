@@ -717,8 +717,11 @@ async function renderEvent(id) {
     const shown = visibleDates();
     const html = dates.length > perPage
       ? `<button type="button" class="btn" data-page="-1" aria-label="${esc(t('prevDays'))}"${pageStart === 0 ? ' disabled' : ''}>${CHEVRON_LEFT}</button>
-         <span class="pager-label"><b>${fmtSpan(parseDate(shown[0]), parseDate(shown.at(-1)))}</b> <span>${t('daysOfTotal', pageStart + 1, pageStart + shown.length, dates.length)}</span></span>
-         <button type="button" class="btn" data-page="1" aria-label="${esc(t('nextDays'))}"${pageStart + perPage >= dates.length ? ' disabled' : ''}>${CHEVRON_RIGHT}</button>`
+         <span class="pager-label">${fmtSpan(parseDate(shown[0]), parseDate(shown.at(-1)))}</span>
+         <button type="button" class="btn" data-page="1" aria-label="${esc(t('nextDays'))}"${pageStart + perPage >= dates.length ? ' disabled' : ''}>${CHEVRON_RIGHT}</button>
+         <span class="pager-track" role="img" title="${esc(t('daysOfTotal', pageStart + 1, pageStart + shown.length, dates.length))}" aria-label="${esc(t('daysOfTotal', pageStart + 1, pageStart + shown.length, dates.length))}">
+           <i style="left:${(pageStart / dates.length) * 100}%;width:${(shown.length / dates.length) * 100}%"></i>
+         </span>`
       : '';
     app.querySelectorAll('[data-pager]').forEach(el => { el.innerHTML = html; el.hidden = !html; });
   }
