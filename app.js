@@ -61,6 +61,7 @@ const icon = path => `<svg viewBox="0 0 24 24" width="15" height="15" aria-hidde
 const CHEVRON_LEFT = icon('<path d="m15 18-6-6 6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const CHEVRON_RIGHT = icon('<path d="m9 18 6-6-6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const ICONS = {
+  plus: icon('<path d="M12 5v14"/><path d="M5 12h14"/>'),
   people: icon('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>'),
   chevronDown: icon('<path d="m6 9 6 6 6-6"/>'),
   check: icon('<path d="m5 12.5 4.5 4.5L19 7.5"/>'),
@@ -660,20 +661,23 @@ async function renderEvent(id) {
     <div class="event-page">
     <div class="event-top">
     <header class="event-head">
-      <div>
-        <a href="#/" class="back">${t('newEvent')}</a>
+      <div class="head-main">
         <h1>${esc(ev.title)}</h1>
         ${ev.description ? `<p class="event-desc">${esc(ev.description)}</p>` : ''}
         ${contactLinks(ev.contact)}
         <p class="meta">${esc(fmtDateRange(dates))} · ${hhmm(times[0])}–${hhmm(times.at(-1) + slot)}
           · <span class="expiry" title="${esc(t('autoDelete'))}">${esc(t('expiresOn', F.dayLongMonth.format(expiry)))}</span></p>
-        <label class="tz-pick">
+      </div>
+      <div class="head-side">
+        <label class="tz-pick"${viewTz !== ev.timezone ? ` title="${esc(t('createdIn', tzName(ev.timezone)))}"` : ''}>
           <span>${t('showTimesIn')}</span>
           <select id="view-tz">${timeZoneOptions(viewTz)}</select>
         </label>
-        ${viewTz !== ev.timezone ? `<p class="hint">${esc(t('createdIn', tzName(ev.timezone)))}</p>` : ''}
+        <div class="head-actions">
+          <button class="btn" id="copy">${t('copyLink')}</button>
+          <a href="#/" class="btn">${ICONS.plus}${t('newEventBtn')}</a>
+        </div>
       </div>
-      <button class="btn" id="copy">${t('copyLink')}</button>
       <div class="head-extras" id="head-extras" hidden></div>
     </header>
     <div class="event-cols">
@@ -727,7 +731,8 @@ async function renderEvent(id) {
     pageStart = Math.max(0, Math.min(pageStart, dates.length - perPage));
     return dates.slice(pageStart, pageStart + perPage);
   }
-  const rowMin = Math.max(6, Math.round(32 * slot / 60));
+  // Minimo di sicurezza (~12 px per ora): sugli schermi normali tutte le ore stanno nel riquadro.
+  const rowMin = Math.max(3, Math.round(12 * slot / 60));
   const gridCols = () => `grid-template-columns: 60px repeat(${visibleDates().length}, minmax(0, 1fr)); --rows: ${times.length}; --row-min: ${rowMin}px`;
   // Barra di paginazione: un segmento cliccabile per ogni gruppo di giorni, largo
   // in proporzione ai giorni che contiene; il segmento attuale è evidenziato.

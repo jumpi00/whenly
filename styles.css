@@ -238,11 +238,22 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .cal-day[data-off] { background: transparent; box-shadow: inset 0 0 0 1px var(--border); color: color-mix(in srgb, var(--muted) 45%, transparent); cursor: default; }
 
 /* Event page */
-.event-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; padding: 4px 0 20px; }
+.event-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px 24px; flex-wrap: wrap; padding: 4px 0 20px; }
+.head-main { min-width: 0; flex: 1 1 320px; }
+.head-side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.head-side .tz-pick { margin-top: 0; justify-content: flex-end; }
+.head-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.head-actions .btn { text-decoration: none; }
+.head-actions .btn svg { width: 16px; height: 16px; }
+@media (max-width: 720px) {
+  .head-side { align-items: stretch; width: 100%; }
+  .head-side .tz-pick { justify-content: flex-start; }
+  .head-actions { justify-content: flex-start; }
+}
 .back { font-size: 13px; color: var(--muted); text-decoration: none; }
 .back:hover { color: var(--text); }
-.event-head h1 { margin-top: 6px; overflow-wrap: anywhere; }
-.event-head > div:first-child { min-width: 0; max-width: 100%; }
+.event-head h1 { margin-top: 0; overflow-wrap: anywhere; }
+.event-head > .head-main { max-width: 100%; }
 .meta { color: var(--muted); margin: 6px 0 0; font-size: 14px; }
 .tz-pick { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; color: var(--muted); }
 .tz-pick select { width: auto; min-width: 0; max-width: 100%; text-overflow: ellipsis; padding: 6px 38px 6px 10px; font-size: 13px; background-position: right 10px center; }
@@ -275,7 +286,10 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
   padding-right: 10px;
   text-align: right;
   white-space: nowrap;
-  transform: translateY(-50%);
+  /* Altezza zero: l'etichetta si sovrappone alla linea dell'ora senza allungare la riga */
+  height: 0;
+  overflow: visible;
+  transform: translateY(-0.5em);
 }
 .g-time.thin { visibility: hidden; }
 

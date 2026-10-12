@@ -3,6 +3,7 @@ export const LANGS = { it: 'Italiano', en: 'English', es: 'Español', fr: 'Fran�
 
 const dict = {
   it: {
+    newEventBtn: "Nuovo evento",
     respondedTitle: "Hanno risposto",
     pagesLabel: "Gruppi di giorni",
     daysOfTotal: (a, b, n) => `giorni ${a}–${b} di ${n}`,
@@ -113,6 +114,7 @@ const dict = {
     missing: names => `Manca: ${names}`,
   },
   en: {
+    newEventBtn: "New event",
     respondedTitle: "Responded",
     pagesLabel: "Groups of days",
     daysOfTotal: (a, b, n) => `days ${a}–${b} of ${n}`,
@@ -223,6 +225,7 @@ const dict = {
     missing: names => `Missing: ${names}`,
   },
   es: {
+    newEventBtn: "Nuevo evento",
     respondedTitle: "Han respondido",
     pagesLabel: "Grupos de días",
     daysOfTotal: (a, b, n) => `días ${a}–${b} de ${n}`,
@@ -333,6 +336,7 @@ const dict = {
     missing: names => `Falta: ${names}`,
   },
   fr: {
+    newEventBtn: "Nouvel événement",
     respondedTitle: "Ont répondu",
     pagesLabel: "Groupes de jours",
     daysOfTotal: (a, b, n) => `jours ${a} à ${b} sur ${n}`,
@@ -443,6 +447,7 @@ const dict = {
     missing: names => `Manque : ${names}`,
   },
   de: {
+    newEventBtn: "Neuer Termin",
     respondedTitle: "Haben geantwortet",
     pagesLabel: "Tagesgruppen",
     daysOfTotal: (a, b, n) => `Tage ${a}–${b} von ${n}`,
