@@ -359,6 +359,7 @@ async function route() {
     history.replaceState(null, '', `#/e/${m[1]}`);
   }
   document.title = 'Whenly';
+  $('#topbar-actions').innerHTML = '';
   try {
     if (m) await renderEvent(m[1]);
     else if (location.hash.startsWith('#/privacy')) renderPrivacy();
@@ -673,10 +674,6 @@ async function renderEvent(id) {
           <span>${t('showTimesIn')}</span>
           <select id="view-tz">${timeZoneOptions(viewTz)}</select>
         </label>
-        <div class="head-actions">
-          <button class="btn" id="copy">${t('copyLink')}</button>
-          <a href="#/" class="btn">${ICONS.plus}${t('newEventBtn')}</a>
-        </div>
       </div>
       <div class="head-extras" id="head-extras" hidden></div>
     </header>
@@ -1164,15 +1161,19 @@ async function renderEvent(id) {
 
   $('#min-dur').addEventListener('change', e => { minDuration = +e.target.value; renderGroup(); });
 
+  // Azioni dell'evento nella barra in alto, accanto alla lingua.
+  $('#topbar-actions').innerHTML = `
+    <button type="button" class="btn primary" id="copy" title="${esc(t('copyLink'))}" aria-label="${esc(t('copyLink'))}">${ICONS.link}<span>${t('copyLinkShort')}</span></button>
+    <a href="#/" class="btn ghost" title="${esc(t('newEventBtn'))}" aria-label="${esc(t('newEventBtn'))}">${ICONS.plus}<span>${t('newEventBtn')}</span></a>`;
   $('#copy').addEventListener('click', async e => {
-    const btn = e.currentTarget;
+    const label = e.currentTarget.querySelector('span');
     try {
       await navigator.clipboard.writeText(eventLink(id));
-      btn.textContent = t('linkCopied');
+      label.textContent = t('linkCopiedShort');
     } catch {
       prompt(t('copyPrompt'), eventLink(id));
     }
-    setTimeout(() => { btn.textContent = t('copyLink'); }, 2000);
+    setTimeout(() => { label.textContent = t('copyLinkShort'); }, 2000);
   });
 
   // --- Orario confermato e barra dell'organizzatore

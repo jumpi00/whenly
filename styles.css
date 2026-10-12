@@ -92,6 +92,23 @@ textarea { resize: vertical; min-height: 64px; }
 .topbar { max-width: 1180px; margin: 0 auto; padding: 18px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .lang-pick select { width: auto; padding: 7px 38px 7px 12px; font-size: 14px; background-position: right 10px center; }
+.topbar-right { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.topbar-actions { display: flex; align-items: center; gap: 4px; }
+.topbar-actions:empty { display: none; }
+.topbar-actions .btn { padding: 7px 12px; font-size: 14px; text-decoration: none; }
+.topbar-actions .btn svg { width: 16px; height: 16px; flex: none; }
+/* Azione secondaria: solo testo, senza bordo */
+.btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+.btn.ghost:hover { background: var(--cell); color: var(--text); border-color: transparent; }
+@media (max-width: 520px) {
+  .topbar-actions .btn.ghost span { display: none; }
+  .topbar-actions .btn.ghost { padding: 7px 9px; }
+  .lang-pick select { padding-right: 32px; padding-left: 10px; background-position: right 8px center; }
+}
+@media (max-width: 380px) {
+  .topbar-actions .btn.primary span { display: none; }
+  .topbar-actions .btn.primary { padding: 7px 10px; }
+}
 .brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; text-decoration: none; }
 .brand-mark {
   width: 18px; height: 18px; border-radius: 5px;
@@ -242,13 +259,9 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .head-main { min-width: 0; flex: 1 1 320px; }
 .head-side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .head-side .tz-pick { margin-top: 0; justify-content: flex-end; }
-.head-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-.head-actions .btn { text-decoration: none; }
-.head-actions .btn svg { width: 16px; height: 16px; }
 @media (max-width: 720px) {
   .head-side { align-items: stretch; width: 100%; }
   .head-side .tz-pick { justify-content: flex-start; }
-  .head-actions { justify-content: flex-start; }
 }
 .back { font-size: 13px; color: var(--muted); text-decoration: none; }
 .back:hover { color: var(--text); }

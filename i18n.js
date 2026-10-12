@@ -3,6 +3,8 @@ export const LANGS = { it: 'Italiano', en: 'English', es: 'Español', fr: 'Fran�
 
 const dict = {
   it: {
+    copyLinkShort: "Copia link",
+    linkCopiedShort: "Copiato ✓",
     newEventBtn: "Nuovo evento",
     respondedTitle: "Hanno risposto",
     pagesLabel: "Gruppi di giorni",
@@ -114,6 +116,8 @@ const dict = {
     missing: names => `Manca: ${names}`,
   },
   en: {
+    copyLinkShort: "Copy link",
+    linkCopiedShort: "Copied ✓",
     newEventBtn: "New event",
     respondedTitle: "Responded",
     pagesLabel: "Groups of days",
@@ -225,6 +229,8 @@ const dict = {
     missing: names => `Missing: ${names}`,
   },
   es: {
+    copyLinkShort: "Copiar enlace",
+    linkCopiedShort: "Copiado ✓",
     newEventBtn: "Nuevo evento",
     respondedTitle: "Han respondido",
     pagesLabel: "Grupos de días",
@@ -336,6 +342,8 @@ const dict = {
     missing: names => `Falta: ${names}`,
   },
   fr: {
+    copyLinkShort: "Copier le lien",
+    linkCopiedShort: "Copié ✓",
     newEventBtn: "Nouvel événement",
     respondedTitle: "Ont répondu",
     pagesLabel: "Groupes de jours",
@@ -447,6 +455,8 @@ const dict = {
     missing: names => `Manque : ${names}`,
   },
   de: {
+    copyLinkShort: "Link kopieren",
+    linkCopiedShort: "Kopiert ✓",
     newEventBtn: "Neuer Termin",
     respondedTitle: "Haben geantwortet",
     pagesLabel: "Tagesgruppen",
