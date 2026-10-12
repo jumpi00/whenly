@@ -248,8 +248,8 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .event-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
 @media (max-width: 900px) { .event-cols { grid-template-columns: 1fr; } }
 .card h2 + .hint { margin-top: 2px; }
-.join-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; margin-top: 14px; }
-@media (max-width: 520px) { .join-form { grid-template-columns: 1fr; } }
+.join-form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+.join-form .btn { align-self: flex-start; }
 .status { font-size: 12px; color: var(--muted); min-height: 1.5em; margin: 8px 0 0; }
 
 /* Availability grid */
