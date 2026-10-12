@@ -1040,20 +1040,24 @@ async function renderEvent(id) {
 
   function heat(ratio) {
     if (ratio <= 0) return 'var(--cell)';
-    return `color-mix(in oklch, var(--heat) ${Math.round(15 + ratio * 85)}%, var(--cell))`;
+    return `color-mix(in srgb, var(--heat) ${Math.round(15 + ratio * 85)}%, var(--cell))`;
   }
 
   function showHover(key, byKey, included) {
     groupGrid.querySelectorAll('.hover').forEach(el => el.classList.remove('hover'));
     if (!me) { hoverInfo.innerHTML = ''; return; }
-    if (!key || !included.length) { hoverInfo.innerHTML = included.length ? t('hoverDefault') : t('noResponses'); return; }
+    if (!key || !included.length) { hoverInfo.innerHTML = `<span class="hi-line">${included.length ? t('hoverDefault') : t('noResponses')}</span>`; return; }
     groupGrid.querySelector(`[data-k="${key}"]`)?.classList.add('hover');
     const { date, min } = L.pos(key);
     const yes = byKey.get(key);
     const no = included.map(p => p.name).filter(n => !yes.includes(n));
-    hoverInfo.innerHTML = `<b>${esc(cap(F.long.format(parseDate(date))))}, ${hhmm(min)}–${hhmm(min + slot)}</b> · ${yes.length}/${included.length}<br>
-      ${yes.length ? `${t('available')}: <b>${yes.map(esc).join(', ')}</b>` : t('nobody')}
-      ${no.length ? `<br>${t('unavailable')}: ${no.map(esc).join(', ')}` : ''}`;
+    // Sempre tre righe di altezza fissa: la griglia non si sposta al passaggio del mouse.
+    const yesText = yes.length ? `${t('available')}: ${yes.join(', ')}` : t('nobody');
+    const noText = no.length ? `${t('unavailable')}: ${no.join(', ')}` : '';
+    hoverInfo.innerHTML = `
+      <span class="hi-line"><b>${esc(cap(F.long.format(parseDate(date))))}, ${hhmm(min)}–${hhmm(min + slot)}</b> · ${yes.length}/${included.length}</span>
+      <span class="hi-line" title="${esc(yesText)}">${yes.length ? `${t('available')}: <b>${yes.map(esc).join(', ')}</b>` : t('nobody')}</span>
+      <span class="hi-line" title="${esc(noText)}">${esc(noText)}</span>`;
   }
 
   const onHover = e => {

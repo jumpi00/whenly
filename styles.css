@@ -377,9 +377,13 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .hover-info {
   margin-top: 12px;
   font-size: 13px;
-  min-height: 3.2em;
+  line-height: 1.45;
+  height: 4.35em;            /* tre righe fisse */
+  overflow: hidden;
   color: var(--muted);
+  flex: none;
 }
+.hi-line { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.45em; }
 .hover-info b { color: var(--text); font-weight: 500; }
 
 /* Best slots */
