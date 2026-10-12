@@ -3,6 +3,10 @@ export const LANGS = { it: 'Italiano', en: 'English', es: 'Español', fr: 'Fran�
 
 const dict = {
   it: {
+    startAt: "Inizio",
+    duration: "Durata",
+    confirmTime: "Conferma orario",
+    cancel: "Annulla",
     loginToSeeShort: "Inserisci il tuo nome per vedere chi è disponibile",
     copyLinkShort: "Copia link",
     linkCopiedShort: "Copiato ✓",
@@ -117,6 +121,10 @@ const dict = {
     missing: names => `Manca: ${names}`,
   },
   en: {
+    startAt: "Start",
+    duration: "Length",
+    confirmTime: "Confirm time",
+    cancel: "Cancel",
     loginToSeeShort: "Enter your name to see who's available",
     copyLinkShort: "Copy link",
     linkCopiedShort: "Copied ✓",
@@ -231,6 +239,10 @@ const dict = {
     missing: names => `Missing: ${names}`,
   },
   es: {
+    startAt: "Inicio",
+    duration: "Duración",
+    confirmTime: "Confirmar horario",
+    cancel: "Cancelar",
     loginToSeeShort: "Escribe tu nombre para ver quién está disponible",
     copyLinkShort: "Copiar enlace",
     linkCopiedShort: "Copiado ✓",
@@ -345,6 +357,10 @@ const dict = {
     missing: names => `Falta: ${names}`,
   },
   fr: {
+    startAt: "Début",
+    duration: "Durée",
+    confirmTime: "Confirmer le créneau",
+    cancel: "Annuler",
     loginToSeeShort: "Saisissez votre nom pour voir qui est disponible",
     copyLinkShort: "Copier le lien",
     linkCopiedShort: "Copié ✓",
@@ -459,6 +475,10 @@ const dict = {
     missing: names => `Manque : ${names}`,
   },
   de: {
+    startAt: "Beginn",
+    duration: "Dauer",
+    confirmTime: "Zeit bestätigen",
+    cancel: "Abbrechen",
     loginToSeeShort: "Gib deinen Namen ein, um zu sehen, wer Zeit hat",
     copyLinkShort: "Link kopieren",
     linkCopiedShort: "Kopiert ✓",

@@ -1175,10 +1175,8 @@ async function renderEvent(id) {
       </li>`;
     }).join('');
 
-    list.querySelectorAll('[data-confirm]').forEach(btn => btn.addEventListener('click', async () => {
-      const b = top[+btn.dataset.confirm];
-      btn.disabled = true;
-      await saveFinal({ start: b.slots[0].key, minutes: b.slots.length * slot }, btn);
+    list.querySelectorAll('[data-confirm]').forEach(btn => btn.addEventListener('click', () => {
+      openConfirmEditor(btn.closest('li'), top[+btn.dataset.confirm]);
     }));
 
     list.querySelectorAll('[data-block]').forEach(li => {
@@ -1190,6 +1188,61 @@ async function renderEvent(id) {
         if (idx === keys.length - 1) el?.classList.add('hl-bottom');
       }));
       li.addEventListener('pointerleave', () => groupGrid.querySelectorAll('.hl').forEach(el => el.classList.remove('hl', 'hl-top', 'hl-bottom')));
+    });
+  }
+
+  // Conferma con orario preciso: dentro la fascia libera l'organizzatore sceglie
+  // l'ora di inizio e la durata della call.
+  function openConfirmEditor(li, b) {
+    const list = $('#best-list');
+    list.querySelectorAll('.confirm-editor').forEach(el => el.remove());
+    list.querySelectorAll('li.editing').forEach(el => el.classList.remove('editing'));
+    li.classList.add('editing');
+
+    const [date, time] = b.slots[0].key.split('T');
+    const [hh, mm] = time.split(':').map(Number);
+    const blockStart = hh * 60 + mm;            // minuti nel fuso dell'evento
+    const blockLen = b.slots.length * slot;
+    const step = slot % 15 === 0 ? 15 : slot;
+    const fTime = new Intl.DateTimeFormat(lang, { timeZone: viewTz, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+    const at = offset => zonedToUtc(date, blockStart + offset, ev.timezone);
+
+    const starts = [];
+    for (let o = 0; o + step <= blockLen; o += step) starts.push(o);
+    const editor = document.createElement('div');
+    editor.className = 'confirm-editor';
+    editor.innerHTML = `
+      <label class="field"><span>${t('startAt')}</span>
+        <select name="start">${starts.map(o => `<option value="${o}">${fTime.format(at(o))}</option>`).join('')}</select>
+      </label>
+      <label class="field"><span>${t('duration')}</span><select name="dur"></select></label>
+      <div class="confirm-actions">
+        <button type="button" class="btn primary" data-save>${t('confirmTime')}</button>
+        <button type="button" class="btn ghost" data-cancel>${t('cancel')}</button>
+      </div>`;
+    li.append(editor);
+
+    const startSel = editor.querySelector('[name="start"]');
+    const durSel = editor.querySelector('[name="dur"]');
+    const fillDurations = () => {
+      const room = blockLen - +startSel.value;
+      const options = [];
+      for (let d = step; d <= room; d += step) options.push(d);
+      const preferred = options.includes(60) ? 60 : options.at(-1);
+      durSel.innerHTML = options.map(d => `<option value="${d}"${d === preferred ? ' selected' : ''}>${fmtDuration(d)}</option>`).join('');
+    };
+    fillDurations();
+    startSel.addEventListener('change', fillDurations);
+    startSel.focus();
+
+    editor.querySelector('[data-cancel]').addEventListener('click', () => {
+      editor.remove();
+      li.classList.remove('editing');
+    });
+    editor.querySelector('[data-save]').addEventListener('click', async e => {
+      const pos = utcToZoned(at(+startSel.value), ev.timezone);
+      e.currentTarget.disabled = true;
+      await saveFinal({ start: `${pos.date}T${hhmm(pos.min)}`, minutes: +durSel.value }, e.currentTarget);
     });
   }
 
