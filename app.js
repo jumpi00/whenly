@@ -710,7 +710,8 @@ async function renderEvent(id) {
   let perPage = dates.length;
   function measurePerPage() {
     const width = $('#group').clientWidth - 40;
-    return Math.max(2, Math.min(dates.length, Math.floor((width - 60) / 46)));
+    // Al massimo 7 giorni per volta (una settimana); meno se lo schermo è stretto.
+    return Math.max(2, Math.min(dates.length, 7, Math.floor((width - 60) / 46)));
   }
   function visibleDates() {
     pageStart = Math.max(0, Math.min(pageStart, dates.length - perPage));
