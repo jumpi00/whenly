@@ -1229,11 +1229,29 @@ async function renderEvent(id) {
 
   // Pulsante "↓ Orari migliori": visibile finché la sezione è fuori dallo schermo.
   const scrollHint = $('#scroll-hint');
-  scrollHint.addEventListener('click', () => $('#best').scrollIntoView({ behavior: 'smooth', block: 'start' }));
-  const hintObserver = new IntersectionObserver(([entry]) => {
-    scrollHint.hidden = entry.isIntersecting;
-  }, { threshold: 0.15 });
-  hintObserver.observe($('#best'));
+  const updateHint = () => {
+    const best = $('#best');
+    if (!best) return;
+    const limit = Math.min(innerHeight, app.getBoundingClientRect().bottom);
+    scrollHint.hidden = best.getBoundingClientRect().top < limit - 40;
+  };
+  scrollHint.addEventListener('click', () => {
+    const best = $('#best');
+    // Su desktop scorre l'area centrale, su telefono la pagina.
+    if (app.scrollHeight > app.clientHeight) {
+      app.scrollTo({ top: app.scrollTop + best.getBoundingClientRect().top - app.getBoundingClientRect().top, behavior: 'smooth' });
+    } else {
+      best.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+  app.addEventListener('scroll', updateHint, { passive: true });
+  addEventListener('scroll', updateHint, { passive: true });
+  addEventListener('resize', updateHint);
+  const hintObserver = { disconnect() {
+    app.removeEventListener('scroll', updateHint);
+    removeEventListener('scroll', updateHint);
+    removeEventListener('resize', updateHint);
+  } };
 
   perPage = measurePerPage();
   renderHeadExtras();
@@ -1242,6 +1260,7 @@ async function renderEvent(id) {
   renderGroup();
   renderPagers();
   thinAllLabels();
+  requestAnimationFrame(updateHint);
 
   // Aggiornamento in tempo reale quando qualcun altro risponde.
   const unsubscribe = store.subscribe(id, {
