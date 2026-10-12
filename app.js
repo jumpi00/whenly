@@ -61,6 +61,9 @@ const icon = path => `<svg viewBox="0 0 24 24" width="15" height="15" aria-hidde
 const CHEVRON_LEFT = icon('<path d="m15 18-6-6 6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const CHEVRON_RIGHT = icon('<path d="m9 18 6-6-6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const ICONS = {
+  people: icon('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>'),
+  chevronDown: icon('<path d="m6 9 6 6 6-6"/>'),
+  check: icon('<path d="m5 12.5 4.5 4.5L19 7.5"/>'),
   arrowDown: icon('<path d="M12 5v14"/><path d="m6 13 6 6 6-6"/>'),
   email: icon('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'),
   phone: icon('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>'),
@@ -678,12 +681,19 @@ async function renderEvent(id) {
       <section class="card" id="group">
         <div class="row-between">
           <h2>${t('groupTitle')}</h2>
-          <span class="muted" id="group-count"></span>
+          <div class="responders" id="responders">
+            <button type="button" class="responders-btn" id="group-count" aria-haspopup="true" aria-expanded="false" aria-controls="people-pop"></button>
+            <div class="responders-pop" id="people-pop">
+              <p class="responders-title">${t('respondedTitle')}</p>
+              <p class="hint">${t('toggleTitle')}</p>
+              <ul id="people"></ul>
+            </div>
+          </div>
         </div>
-        <div class="chips" id="people"></div>
         <div class="legend" id="legend"></div>
         <div class="day-pager" data-pager></div>
         <div class="grid-wrap"><div class="grid readonly" id="group-grid" role="group" aria-label="${esc(t('groupTitle'))}"></div></div>
+        <div class="page-bar-wrap" data-pagebar></div>
         <div class="hover-info" id="hover-info" aria-live="polite"></div>
       </section>
     </div>
@@ -728,7 +738,7 @@ async function renderEvent(id) {
       const from = i * perPage, to = Math.min(from + perPage, dates.length);
       const label = fmtSpan(parseDate(dates[from]), parseDate(dates[to - 1]));
       html += `<button type="button" class="page-seg${i === current ? ' active' : ''}" data-goto="${i}" style="flex-grow:${to - from}"
-        title="${esc(label)}" aria-label="${esc(label)}"${i === current ? ' aria-current="page"' : ''}>${i + 1}</button>`;
+        title="${esc(label)}" aria-label="${esc(label)}"${i === current ? ' aria-current="page"' : ''}></button>`;
     }
     return `<nav class="page-bar" aria-label="${esc(t('pagesLabel'))}">${html}</nav>`;
   }
@@ -738,10 +748,12 @@ async function renderEvent(id) {
     const html = dates.length > perPage
       ? `<button type="button" class="btn" data-page="-1" aria-label="${esc(t('prevDays'))}"${pageStart === 0 ? ' disabled' : ''}>${CHEVRON_LEFT}</button>
          <span class="pager-label">${fmtSpan(parseDate(shown[0]), parseDate(shown.at(-1)))}</span>
-         <button type="button" class="btn" data-page="1" aria-label="${esc(t('nextDays'))}"${pageStart + perPage >= dates.length ? ' disabled' : ''}>${CHEVRON_RIGHT}</button>
-         ${paginationHTML()}`
+         <button type="button" class="btn" data-page="1" aria-label="${esc(t('nextDays'))}"${pageStart + perPage >= dates.length ? ' disabled' : ''}>${CHEVRON_RIGHT}</button>`
       : '';
     app.querySelectorAll('[data-pager]').forEach(el => { el.innerHTML = html; el.hidden = !html; });
+    // Barra delle pagine sotto la griglia, come una barra di scorrimento.
+    const bar = html ? paginationHTML() : '';
+    app.querySelectorAll('[data-pagebar]').forEach(el => { el.innerHTML = bar; el.hidden = !bar; });
   }
   function redrawGrids() {
     if (me) renderMine();
@@ -872,6 +884,7 @@ async function renderEvent(id) {
       <p class="hint" id="paint-hint">${t('paintHint')} <span class="sr-only">${t('keyboardHint')}</span></p>
       <div class="day-pager" data-pager></div>
       <div class="grid-wrap"><div class="grid paint" id="my-grid" role="group" aria-label="${esc(t('yourAvailability'))}" aria-describedby="paint-hint" style="${gridCols()}">${gridHTML('mine')}</div></div>
+      <div class="page-bar-wrap" data-pagebar></div>
       <p class="status" id="save-status" role="status"></p>`;
     const grid = $('#my-grid');
     const paint = () => grid.querySelectorAll('[data-k]').forEach(el => {
@@ -978,9 +991,18 @@ async function renderEvent(id) {
     $('#group').classList.toggle('locked', !me);
     $('#group').toggleAttribute('inert', !me);
 
-    $('#group-count').textContent = t('responses', all.length);
+    // "N risposte" apre l'elenco di chi ha risposto (al passaggio del mouse o al tocco).
+    const countBtn = $('#group-count');
+    countBtn.innerHTML = `${ICONS.people}<span>${t('responses', all.length)}</span>${all.length ? ICONS.chevronDown : ''}`;
+    countBtn.disabled = !all.length;
+    if (!all.length) $('#responders').classList.remove('open');
     $('#people').innerHTML = all
-      .map(p => `<button class="chip${excluded.has(p.name) ? ' off' : ''}" data-name="${esc(p.name)}" title="${esc(t('toggleTitle'))}">${esc(p.name)}${p.name === me ? ` ${t('you')}` : ''}</button>`)
+      .map(p => {
+        const on = !excluded.has(p.name);
+        return `<li><button type="button" class="person${on ? '' : ' off'}" data-name="${esc(p.name)}" aria-pressed="${on}">
+          <span class="person-check" aria-hidden="true">${on ? ICONS.check : ''}</span>
+          <span>${esc(p.name)}${p.name === me ? ` <span class="muted">${t('you')}</span>` : ''}</span></button></li>`;
+      })
       .join('');
     $('#legend').innerHTML = total
       ? `<span>0/${total}</span><span class="legend-bar">${Array.from({ length: Math.min(total, 8) + 1 }, (_, i) => `<i style="background:${heat(i / Math.min(total, 8))}"></i>`).join('')}</span><span>${total}/${total} ${t('legendAvailable')}</span>`
@@ -1023,6 +1045,30 @@ async function renderEvent(id) {
   groupGrid.addEventListener('pointerover', onHover);
   groupGrid.addEventListener('pointerdown', onHover);
   keyboardCells(groupGrid, { onFocus: cell => onHover({ target: cell }) });
+
+  // Al tocco (telefono) il pulsante apre/chiude l'elenco; un tocco altrove lo chiude.
+  const responders = $('#responders');
+  // L'elenco si apre verso il lato in cui c'è spazio (a destra o a sinistra del pulsante).
+  const placePop = () => requestAnimationFrame(() => {
+    const pop = $('#people-pop');
+    pop.style.left = ''; pop.style.right = '';
+    const r = pop.getBoundingClientRect();
+    if (r.left < 8) { pop.style.left = '0'; pop.style.right = 'auto'; }
+  });
+  responders.addEventListener('pointerenter', placePop);
+  responders.addEventListener('focusin', placePop);
+  $('#group-count').addEventListener('click', () => {
+    const open = responders.classList.toggle('open');
+    $('#group-count').setAttribute('aria-expanded', String(open));
+    placePop();
+  });
+  const closeResponders = e => {
+    if (!responders.contains(e.target)) {
+      responders.classList.remove('open');
+      $('#group-count').setAttribute('aria-expanded', 'false');
+    }
+  };
+  document.addEventListener('pointerdown', closeResponders);
 
   $('#people').addEventListener('click', e => {
     const chip = e.target.closest('[data-name]');
@@ -1210,6 +1256,7 @@ async function renderEvent(id) {
   });
   cleanup = () => {
     unsubscribe();
+    document.removeEventListener('pointerdown', closeResponders);
     hintObserver.disconnect();
     removeEventListener('whenly:reconnected', onReconnected);
     removeEventListener('resize', onResize);

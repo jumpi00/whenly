@@ -171,9 +171,10 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .error { align-self: flex-start; max-width: 100%; scroll-margin: 24px; }
 
 /* Vista di gruppo disabilitata finché non si entra con il proprio nome */
-.card.locked .chips,
 .card.locked .legend,
 .card.locked .day-pager,
+.card.locked .page-bar-wrap,
+.card.locked .responders,
 .card.locked .grid-wrap { opacity: .4; filter: grayscale(1); pointer-events: none; }
 .card.locked,
 .card.locked h2,
@@ -303,21 +304,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .legend-bar { display: flex; height: 10px; border-radius: 3px; overflow: hidden; width: 120px; }
 .legend-bar i { flex: 1; }
 
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-.chips:empty, .legend:empty { display: none; }
-.chip {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: 999px;
-  padding: 4px 11px;
-  font-size: 13px;
-  cursor: pointer;
-  display: inline-flex; align-items: center; gap: 6px;
-}
-.chip::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--heat); }
-.chip.off { color: var(--muted); text-decoration: line-through; }
-.chip.off::before { background: var(--border); }
-.chip.missing { background: var(--accent-soft); }
+.legend:empty { display: none; }
 
 .hover-info {
   margin-top: 12px;
@@ -356,18 +343,63 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .day-pager[hidden] { display: none; }
 .day-pager { flex-wrap: wrap; row-gap: 8px; }
 .pager-label { flex: 1; text-align: center; font-weight: 500; color: var(--text); }
-/* Barra di paginazione: posizione nei giorni + pagine cliccabili, in 18 px di altezza */
-.page-bar { flex-basis: 100%; display: flex; gap: 3px; height: 18px; }
+/* Barra delle pagine sotto la griglia, sottile come una barra di scorrimento.
+   Ogni segmento è un gruppo di giorni cliccabile; quello attuale è verde. */
+.page-bar-wrap { margin-top: 6px; padding-left: 60px; }
+.page-bar-wrap[hidden] { display: none; }
+.page-bar { display: flex; gap: 3px; }
 .page-seg {
-  flex: 1 1 0; min-width: 18px; height: 100%; padding: 0;
-  border: 0; border-radius: 4px;
-  background: var(--cell); color: var(--muted);
-  font: 600 10.5px/18px var(--font);
-  cursor: pointer;
-  transition: background .15s;
+  position: relative; flex: 1 1 0; min-width: 12px; height: 14px; padding: 0;
+  border: 0; background: none; cursor: pointer;
 }
-.page-seg:hover { background: var(--cell-alt); color: var(--text); }
-.page-seg.active { background: var(--heat); color: var(--accent-ink); }
+.page-seg::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 4px; height: 6px;
+  border-radius: 3px; background: var(--cell-alt); transition: background .15s;
+}
+.page-seg:hover::before { background: var(--muted); }
+.page-seg.active::before { background: var(--heat); }
+
+/* "N risposte" con elenco di chi ha risposto */
+.responders { position: relative; }
+.responders-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 8px 5px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--muted); font: 500 13px var(--font); cursor: pointer;
+}
+.responders-btn svg { flex: none; }
+.responders-btn:not(:disabled):hover, .responders.open .responders-btn { color: var(--text); border-color: var(--muted); }
+.responders-btn:disabled { cursor: default; border-color: transparent; padding-inline: 0; }
+.responders-pop {
+  display: none;
+  position: absolute; right: 0; top: 100%; z-index: 30;
+  width: max-content; min-width: 220px; max-width: 280px;
+  margin-top: 6px; padding: 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+}
+/* Ponte invisibile tra pulsante ed elenco, così il passaggio del mouse non lo chiude */
+.responders-pop::before { content: ''; position: absolute; left: 0; right: 0; top: -8px; height: 8px; }
+.responders:has(.responders-btn:not(:disabled)):hover .responders-pop,
+.responders:focus-within .responders-pop,
+.responders.open .responders-pop { display: block; }
+.responders-title { margin: 0; font-weight: 600; font-size: 14px; }
+.responders-pop .hint { margin: 2px 0 8px; }
+.responders-pop ul { list-style: none; margin: 0; padding: 0; max-height: 240px; overflow-y: auto; }
+.person {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 6px 4px; border: 0; border-radius: 6px; background: none;
+  font: 400 14px var(--font); text-align: left; cursor: pointer;
+}
+.person:hover { background: var(--cell); }
+.person-check {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 5px;
+  border: 1px solid var(--border); background: var(--surface);
+}
+.person:not(.off) .person-check { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.person-check svg { width: 13px; height: 13px; }
+.person.off > span:last-child { color: var(--muted); text-decoration: line-through; }
 
 /* Pulsante che invita a scorrere fino agli orari migliori (solo desktop) */
 .scroll-hint { display: none; }
