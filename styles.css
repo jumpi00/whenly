@@ -101,14 +101,13 @@ textarea { resize: vertical; min-height: 64px; }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
 .btn.ghost:hover { background: var(--cell); color: var(--text); border-color: transparent; }
 @media (max-width: 520px) {
-  .topbar-actions .btn.ghost span { display: none; }
+  /* Su telefono le azioni restano solo come icone */
+  .topbar-actions .btn span { display: none; }
   .topbar-actions .btn.ghost { padding: 7px 9px; }
+  .topbar-actions .btn.primary { padding: 7px 10px; }
   .lang-pick select { padding-right: 32px; padding-left: 10px; background-position: right 8px center; }
 }
-@media (max-width: 380px) {
-  .topbar-actions .btn.primary span { display: none; }
-  .topbar-actions .btn.primary { padding: 7px 10px; }
-}
+
 .brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; text-decoration: none; }
 .brand-mark {
   width: 18px; height: 18px; border-radius: 5px;

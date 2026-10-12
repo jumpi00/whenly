@@ -1166,14 +1166,16 @@ async function renderEvent(id) {
     <button type="button" class="btn primary" id="copy" title="${esc(t('copyLink'))}" aria-label="${esc(t('copyLink'))}">${ICONS.link}<span>${t('copyLinkShort')}</span></button>
     <a href="#/" class="btn ghost" title="${esc(t('newEventBtn'))}" aria-label="${esc(t('newEventBtn'))}">${ICONS.plus}<span>${t('newEventBtn')}</span></a>`;
   $('#copy').addEventListener('click', async e => {
-    const label = e.currentTarget.querySelector('span');
+    const btn = e.currentTarget;
+    const original = btn.innerHTML;
     try {
       await navigator.clipboard.writeText(eventLink(id));
-      label.textContent = t('linkCopiedShort');
+      // Conferma visibile anche su telefono, dove resta solo l'icona: diventa una spunta.
+      btn.innerHTML = `${ICONS.check}<span>${t('linkCopiedShort')}</span>`;
     } catch {
       prompt(t('copyPrompt'), eventLink(id));
     }
-    setTimeout(() => { label.textContent = t('copyLinkShort'); }, 2000);
+    setTimeout(() => { btn.innerHTML = original; }, 2000);
   });
 
   // --- Orario confermato e barra dell'organizzatore
