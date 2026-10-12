@@ -207,16 +207,27 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .lock-overlay[hidden] { display: none; }
 .lock-pill {
   pointer-events: auto;
-  display: inline-flex; align-items: center; gap: 8px;
+  display: inline-flex; align-items: center;
   max-width: 100%;
-  padding: 10px 16px; border-radius: 999px;
+  padding: 10px; border-radius: 999px;
   border: 1px solid var(--accent-text);
   background: var(--surface); color: var(--text);
   font: 500 14px/1.3 var(--font); text-align: left;
   box-shadow: 0 8px 24px rgba(0, 0, 0, .22);
   cursor: pointer;
 }
-.lock-pill:hover { background: var(--accent-soft); }
+.lock-icon { display: inline-flex; color: var(--accent-text); flex: none; }
+.lock-icon svg { width: 20px; height: 20px; }
+/* Messaggio chiuso: si apre al passaggio del mouse, al focus o al tocco */
+.lock-msg {
+  display: inline-flex; align-items: center; gap: 8px;
+  max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap;
+  transition: max-width .25s ease, opacity .2s ease, margin .25s ease;
+}
+.lock-pill:hover .lock-msg,
+.lock-pill:focus-visible .lock-msg,
+.lock-pill.open .lock-msg { max-width: 420px; opacity: 1; margin: 0 6px 0 10px; }
+.lock-pill:hover, .lock-pill.open { background: var(--accent-soft); }
 .lock-arrow { display: inline-flex; color: var(--accent-text); flex: none; }
 .lock-arrow svg { width: 18px; height: 18px; }
 .lock-arrow-up { display: none; }
@@ -226,6 +237,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
   /* Griglia lunga: la pillola resta visibile mentre si scorre */
   .lock-overlay { align-items: flex-start; padding-top: 48px; }
   .lock-pill { position: sticky; top: 40vh; }
+  .lock-pill.open .lock-msg, .lock-pill:hover .lock-msg { white-space: normal; max-width: 240px; }
 }
 
 /* Descrizione e contatti */

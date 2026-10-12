@@ -61,6 +61,7 @@ const icon = path => `<svg viewBox="0 0 24 24" width="15" height="15" aria-hidde
 const CHEVRON_LEFT = icon('<path d="m15 18-6-6 6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const CHEVRON_RIGHT = icon('<path d="m9 18 6-6-6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const ICONS = {
+  lock: icon('<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>'),
   arrowLeft: icon('<path d="M19 12H5"/><path d="m11 6-6 6 6 6"/>'),
   arrowUp: icon('<path d="M12 19V5"/><path d="m6 11 6-6 6 6"/>'),
   plus: icon('<path d="M12 5v14"/><path d="M5 12h14"/>'),
@@ -698,10 +699,13 @@ async function renderEvent(id) {
         <div class="grid-wrap">
           <div class="grid readonly" id="group-grid" role="group" aria-label="${esc(t('groupTitle'))}"></div>
           <div class="lock-overlay" id="lock-overlay" hidden>
-            <button type="button" class="lock-pill" id="lock-pill">
-              <span class="lock-arrow lock-arrow-left" aria-hidden="true">${ICONS.arrowLeft}</span>
-              <span class="lock-arrow lock-arrow-up" aria-hidden="true">${ICONS.arrowUp}</span>
-              <span>${t('loginToSeeShort')}</span>
+            <button type="button" class="lock-pill" id="lock-pill" aria-label="${esc(t('loginToSeeShort'))}">
+              <span class="lock-icon" aria-hidden="true">${ICONS.lock}</span>
+              <span class="lock-msg">
+                <span class="lock-arrow lock-arrow-left" aria-hidden="true">${ICONS.arrowLeft}</span>
+                <span class="lock-arrow lock-arrow-up" aria-hidden="true">${ICONS.arrowUp}</span>
+                <span>${t('loginToSeeShort')}</span>
+              </span>
             </button>
           </div>
         </div>
@@ -1088,7 +1092,15 @@ async function renderEvent(id) {
   document.addEventListener('pointerdown', closeResponders);
 
   // La pillola sopra la griglia bloccata porta al campo "Nome".
-  $('#lock-pill').addEventListener('click', () => {
+  // Icona del lucchetto: il messaggio si apre al passaggio del mouse; sui touch
+  // il primo tocco lo apre, il secondo porta al campo "Nome".
+  const lockPill = $('#lock-pill');
+  lockPill.addEventListener('click', () => {
+    if (matchMedia('(hover: none)').matches && !lockPill.classList.contains('open')) {
+      lockPill.classList.add('open');
+      return;
+    }
+    lockPill.classList.remove('open');
     const name = $('#join')?.name;
     if (!name) return;
     name.scrollIntoView({ behavior: 'smooth', block: 'center' });
