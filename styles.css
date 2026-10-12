@@ -304,6 +304,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .legend-bar i { flex: 1; }
 
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chips:empty, .legend:empty { display: none; }
 .chip {
   border: 1px solid var(--border);
   background: var(--surface);
@@ -351,7 +352,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .score.full { background: var(--accent); color: var(--accent-ink); }
 .empty { color: var(--muted); padding: 14px 0 4px; margin: 0; }
 
-.day-pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; font-size: 13px; color: var(--muted); }
+.day-pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 13px; color: var(--muted); }
 .day-pager[hidden] { display: none; }
 .day-pager .btn { width: 38px; height: 38px; padding: 0; }
 
@@ -388,6 +389,9 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
    Su telefono, tablet o finestre basse resta lo scorrimento normale. */
 @media (min-width: 1024px) and (min-height: 660px) {
   body { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+  /* Pagina evento: occupa tutto lo schermo, ma scorre se l'intestazione è molto alta
+     (descrizione, contatti, orario confermato) invece di schiacciare le griglie. */
+  body:has(.event-page) { height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; }
   .topbar, .container { max-width: 1320px; width: 100%; }
   .topbar { flex: none; padding-top: 14px; padding-bottom: 14px; }
   #app { flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -425,8 +429,9 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
     flex: 1;
     min-height: 0;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(280px, 340px);
-    grid-template-rows: auto minmax(0, 1fr);
+    /* Due griglie larghe (più giorni visibili) e gli orari migliori in una fascia sotto */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(400px, 1fr) auto;
     gap: 16px 20px;
   }
   .event-head { grid-column: 1 / -1; padding: 0; }
@@ -435,11 +440,17 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
   .event-page .card { min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   /* Tutte le fasce entrano sempre nel riquadro: le righe si adattano all'altezza.
      Le etichette sono una per ora, quindi restano distanziate anche con 24 ore. */
-  .event-page .grid-wrap { flex: 1; min-height: 0; margin-top: 10px; padding-top: 6px; }
+  .event-page .grid-wrap { flex: 1; min-height: 0; margin-top: 6px; padding-top: 6px; }
   .event-page .grid { height: 100%; grid-template-rows: auto repeat(var(--rows), minmax(0, 1fr)); }
   .event-page .g-cell, .event-page .g-empty { height: auto; min-height: 0; }
   .event-page .hover-info { flex: none; }
-  .best { margin: 0; overflow-y: auto; }
+  .best { margin: 0; grid-column: 1 / -1; padding: 10px 18px 12px; }
+  .best h2 { font-size: 15px; }
+  .best .row-between select { padding-block: 4px; }
+  .best ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+  .best li { border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; gap: 10px; }
+  .best li:nth-child(n + 4) { display: none; }
+  .best ol > .empty { grid-column: 1 / -1; padding: 0; }
   .best li { gap: 10px; }
 }
 
