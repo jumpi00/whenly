@@ -61,6 +61,7 @@ const icon = path => `<svg viewBox="0 0 24 24" width="15" height="15" aria-hidde
 const CHEVRON_LEFT = icon('<path d="m15 18-6-6 6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const CHEVRON_RIGHT = icon('<path d="m9 18 6-6-6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const ICONS = {
+  arrowDown: icon('<path d="M12 5v14"/><path d="m6 13 6 6 6-6"/>'),
   email: icon('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'),
   phone: icon('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>'),
   whatsapp: icon('<path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3z"/><path d="M9 10c.5 2 2 3.5 4 4l1.2-1.2 2 .9c-.3 1.1-1.2 1.8-2.3 1.8C10.8 15.5 8.5 13.2 8.5 10.1c0-1.1.7-2 1.8-2.3l.9 2z"/>'),
@@ -654,6 +655,7 @@ async function renderEvent(id) {
 
   app.innerHTML = `
     <div class="event-page">
+    <div class="event-top">
     <header class="event-head">
       <div>
         <a href="#/" class="back">${t('newEvent')}</a>
@@ -685,7 +687,8 @@ async function renderEvent(id) {
         <div class="hover-info" id="hover-info" aria-live="polite"></div>
       </section>
     </div>
-    <section class="card best">
+    </div>
+    <section class="card best" id="best">
       <div class="row-between">
         <h2>${t('bestTitle')}</h2>
         <label class="cal-nav">${t('minDuration')}
@@ -694,6 +697,7 @@ async function renderEvent(id) {
       </div>
       <ol id="best-list"></ol>
     </section>
+    <button type="button" class="scroll-hint" id="scroll-hint" hidden>${ICONS.arrowDown}${t('bestTitle')}</button>
     </div>`;
 
   $('#view-tz').addEventListener('change', e => {
@@ -713,26 +717,19 @@ async function renderEvent(id) {
     return dates.slice(pageStart, pageStart + perPage);
   }
   const gridCols = () => `grid-template-columns: 60px repeat(${visibleDates().length}, minmax(0, 1fr)); --rows: ${times.length}`;
-  // Paginazione numerata: un pulsante per ogni gruppo di giorni. Con tante pagine
-  // mostra la prima, l'ultima e quelle vicine a quella attuale, con "…" in mezzo.
+  // Barra di paginazione: un segmento cliccabile per ogni gruppo di giorni, largo
+  // in proporzione ai giorni che contiene; il segmento attuale è evidenziato.
   function paginationHTML() {
     const pages = Math.ceil(dates.length / perPage);
     const current = pageStart + perPage >= dates.length ? pages - 1 : Math.floor(pageStart / perPage);
-    const show = new Set([0, pages - 1, current - 1, current, current + 1]);
-    let html = '', gap = false;
+    let html = '';
     for (let i = 0; i < pages; i++) {
-      if (!show.has(i)) {
-        if (!gap) html += `<span class="page-gap" aria-hidden="true">…</span>`;
-        gap = true;
-        continue;
-      }
-      gap = false;
-      const first = Math.min(i * perPage, dates.length - perPage);
-      const label = fmtSpan(parseDate(dates[first]), parseDate(dates[Math.min(first + perPage, dates.length) - 1]));
-      html += `<button type="button" class="page-btn${i === current ? ' active' : ''}" data-goto="${i}"
+      const from = i * perPage, to = Math.min(from + perPage, dates.length);
+      const label = fmtSpan(parseDate(dates[from]), parseDate(dates[to - 1]));
+      html += `<button type="button" class="page-seg${i === current ? ' active' : ''}" data-goto="${i}" style="flex-grow:${to - from}"
         title="${esc(label)}" aria-label="${esc(label)}"${i === current ? ' aria-current="page"' : ''}>${i + 1}</button>`;
     }
-    return `<nav class="pagination" aria-label="${esc(t('pagesLabel'))}">${html}</nav>`;
+    return `<nav class="page-bar" aria-label="${esc(t('pagesLabel'))}">${html}</nav>`;
   }
 
   function renderPagers() {
@@ -1183,6 +1180,14 @@ async function renderEvent(id) {
     });
   }
 
+  // Pulsante "↓ Orari migliori": visibile finché la sezione è fuori dallo schermo.
+  const scrollHint = $('#scroll-hint');
+  scrollHint.addEventListener('click', () => $('#best').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  const hintObserver = new IntersectionObserver(([entry]) => {
+    scrollHint.hidden = entry.isIntersecting;
+  }, { threshold: 0.15 });
+  hintObserver.observe($('#best'));
+
   perPage = measurePerPage();
   renderHeadExtras();
   renderMine();
@@ -1204,6 +1209,7 @@ async function renderEvent(id) {
   });
   cleanup = () => {
     unsubscribe();
+    hintObserver.disconnect();
     removeEventListener('whenly:reconnected', onReconnected);
     removeEventListener('resize', onResize);
     app.removeEventListener('click', onPage);

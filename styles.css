@@ -356,17 +356,21 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .day-pager[hidden] { display: none; }
 .day-pager { flex-wrap: wrap; row-gap: 8px; }
 .pager-label { flex: 1; text-align: center; font-weight: 500; color: var(--text); }
-/* Paginazione dei gruppi di giorni */
-.pagination { flex-basis: 100%; display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; }
-.page-btn {
-  min-width: 32px; height: 32px; padding: 0 8px;
-  border: 1px solid var(--border); border-radius: 8px;
-  background: var(--surface); color: var(--text);
-  font-size: 13px; font-weight: 500; cursor: pointer;
+/* Barra di paginazione: posizione nei giorni + pagine cliccabili, in 18 px di altezza */
+.page-bar { flex-basis: 100%; display: flex; gap: 3px; height: 18px; }
+.page-seg {
+  flex: 1 1 0; min-width: 18px; height: 100%; padding: 0;
+  border: 0; border-radius: 4px;
+  background: var(--cell); color: var(--muted);
+  font: 600 10.5px/18px var(--font);
+  cursor: pointer;
+  transition: background .15s;
 }
-.page-btn:hover { border-color: var(--muted); }
-.page-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.page-gap { color: var(--muted); padding: 0 2px; }
+.page-seg:hover { background: var(--cell-alt); color: var(--text); }
+.page-seg.active { background: var(--heat); color: var(--accent-ink); }
+
+/* Pulsante che invita a scorrere fino agli orari migliori (solo desktop) */
+.scroll-hint { display: none; }
 .day-pager .btn { width: 38px; height: 38px; padding: 0; }
 
 .footer { color: var(--muted); font-size: 13px; padding-bottom: 32px; }
@@ -438,16 +442,6 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
   .f-cal .cal-day { aspect-ratio: auto; min-height: 0; }
 
   /* Pagina evento: tre colonne che riempiono l'altezza */
-  .event-page {
-    flex: 1;
-    min-height: 0;
-    display: grid;
-    /* Due griglie larghe (più giorni visibili) e gli orari migliori in una fascia sotto */
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto minmax(400px, 1fr) auto;
-    gap: 16px 20px;
-  }
-  .event-head { grid-column: 1 / -1; padding: 0; }
   .event-head h1 { font-size: 28px; }
   .event-cols { display: contents; }
   .event-page .card { min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
@@ -457,7 +451,29 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
   .event-page .grid { height: 100%; grid-template-rows: auto repeat(var(--rows), minmax(0, 1fr)); }
   .event-page .g-cell, .event-page .g-empty { height: auto; min-height: 0; }
   .event-page .hover-info { flex: none; }
-  .best { margin: 0; grid-column: 1 / -1; padding: 10px 18px 12px; }
+  /* Le griglie occupano tutta l'altezza visibile; gli orari migliori stanno sotto */
+  .event-page { height: 100%; display: block; }
+  .event-top {
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(400px, 1fr);
+    gap: 16px 20px;
+  }
+  .event-top .event-head { grid-column: 1 / -1; padding: 0; }
+  .scroll-hint {
+    position: fixed; left: 50%; bottom: 72px; transform: translateX(-50%); z-index: 20;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 999px;
+    border: 1px solid var(--accent-text);
+    background: var(--surface); color: var(--text);
+    font: 500 13px var(--font);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .18);
+    cursor: pointer;
+  }
+  .scroll-hint svg { color: var(--accent-text); }
+  .scroll-hint[hidden] { display: none; }
+  .best { margin: 16px 0 0; grid-column: auto; padding: 10px 18px 12px; }
   .best h2 { font-size: 15px; }
   .best .row-between select { padding-block: 4px; }
   .best ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
