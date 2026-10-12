@@ -727,7 +727,8 @@ async function renderEvent(id) {
     pageStart = Math.max(0, Math.min(pageStart, dates.length - perPage));
     return dates.slice(pageStart, pageStart + perPage);
   }
-  const gridCols = () => `grid-template-columns: 60px repeat(${visibleDates().length}, minmax(0, 1fr)); --rows: ${times.length}`;
+  const rowMin = Math.max(6, Math.round(32 * slot / 60));
+  const gridCols = () => `grid-template-columns: 60px repeat(${visibleDates().length}, minmax(0, 1fr)); --rows: ${times.length}; --row-min: ${rowMin}px`;
   // Barra di paginazione: un segmento cliccabile per ogni gruppo di giorni, largo
   // in proporzione ai giorni che contiene; il segmento attuale è evidenziato.
   function paginationHTML() {
