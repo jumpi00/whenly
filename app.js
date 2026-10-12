@@ -713,15 +713,35 @@ async function renderEvent(id) {
     return dates.slice(pageStart, pageStart + perPage);
   }
   const gridCols = () => `grid-template-columns: 60px repeat(${visibleDates().length}, minmax(0, 1fr)); --rows: ${times.length}`;
+  // Paginazione numerata: un pulsante per ogni gruppo di giorni. Con tante pagine
+  // mostra la prima, l'ultima e quelle vicine a quella attuale, con "…" in mezzo.
+  function paginationHTML() {
+    const pages = Math.ceil(dates.length / perPage);
+    const current = pageStart + perPage >= dates.length ? pages - 1 : Math.floor(pageStart / perPage);
+    const show = new Set([0, pages - 1, current - 1, current, current + 1]);
+    let html = '', gap = false;
+    for (let i = 0; i < pages; i++) {
+      if (!show.has(i)) {
+        if (!gap) html += `<span class="page-gap" aria-hidden="true">…</span>`;
+        gap = true;
+        continue;
+      }
+      gap = false;
+      const first = Math.min(i * perPage, dates.length - perPage);
+      const label = fmtSpan(parseDate(dates[first]), parseDate(dates[Math.min(first + perPage, dates.length) - 1]));
+      html += `<button type="button" class="page-btn${i === current ? ' active' : ''}" data-goto="${i}"
+        title="${esc(label)}" aria-label="${esc(label)}"${i === current ? ' aria-current="page"' : ''}>${i + 1}</button>`;
+    }
+    return `<nav class="pagination" aria-label="${esc(t('pagesLabel'))}">${html}</nav>`;
+  }
+
   function renderPagers() {
     const shown = visibleDates();
     const html = dates.length > perPage
       ? `<button type="button" class="btn" data-page="-1" aria-label="${esc(t('prevDays'))}"${pageStart === 0 ? ' disabled' : ''}>${CHEVRON_LEFT}</button>
          <span class="pager-label">${fmtSpan(parseDate(shown[0]), parseDate(shown.at(-1)))}</span>
          <button type="button" class="btn" data-page="1" aria-label="${esc(t('nextDays'))}"${pageStart + perPage >= dates.length ? ' disabled' : ''}>${CHEVRON_RIGHT}</button>
-         <span class="pager-track" role="img" title="${esc(t('daysOfTotal', pageStart + 1, pageStart + shown.length, dates.length))}" aria-label="${esc(t('daysOfTotal', pageStart + 1, pageStart + shown.length, dates.length))}">
-           <i style="left:${(pageStart / dates.length) * 100}%;width:${(shown.length / dates.length) * 100}%"></i>
-         </span>`
+         ${paginationHTML()}`
       : '';
     app.querySelectorAll('[data-pager]').forEach(el => { el.innerHTML = html; el.hidden = !html; });
   }
@@ -733,9 +753,11 @@ async function renderEvent(id) {
     thinAllLabels();
   }
   function onPage(e) {
-    const btn = e.target.closest('[data-page]');
-    if (!btn) return;
-    pageStart += +btn.dataset.page * perPage;
+    const step = e.target.closest('[data-page]');
+    const go = e.target.closest('[data-goto]');
+    if (step) pageStart += +step.dataset.page * perPage;
+    else if (go) pageStart = +go.dataset.goto * perPage;
+    else return;
     redrawGrids();
   }
   app.addEventListener('click', onPage);

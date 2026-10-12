@@ -3,6 +3,7 @@ export const LANGS = { it: 'Italiano', en: 'English', es: 'Español', fr: 'Fran�
 
 const dict = {
   it: {
+    pagesLabel: "Gruppi di giorni",
     daysOfTotal: (a, b, n) => `giorni ${a}–${b} di ${n}`,
     keyboardHint: "Da tastiera: usa le frecce per spostarti e la barra spaziatrice per selezionare.",
     organizer: "Sei l'organizzatore",
@@ -111,6 +112,7 @@ const dict = {
     missing: names => `Manca: ${names}`,
   },
   en: {
+    pagesLabel: "Groups of days",
     daysOfTotal: (a, b, n) => `days ${a}–${b} of ${n}`,
     keyboardHint: "With the keyboard: use the arrow keys to move and the space bar to select.",
     organizer: "You're the organizer",
@@ -219,6 +221,7 @@ const dict = {
     missing: names => `Missing: ${names}`,
   },
   es: {
+    pagesLabel: "Grupos de días",
     daysOfTotal: (a, b, n) => `días ${a}–${b} de ${n}`,
     keyboardHint: "Con el teclado: usa las flechas para moverte y la barra espaciadora para seleccionar.",
     organizer: "Eres el organizador",
@@ -327,6 +330,7 @@ const dict = {
     missing: names => `Falta: ${names}`,
   },
   fr: {
+    pagesLabel: "Groupes de jours",
     daysOfTotal: (a, b, n) => `jours ${a} à ${b} sur ${n}`,
     keyboardHint: "Au clavier : utilisez les flèches pour vous déplacer et la barre d'espace pour sélectionner.",
     organizer: "Vous êtes l'organisateur",
@@ -435,6 +439,7 @@ const dict = {
     missing: names => `Manque : ${names}`,
   },
   de: {
+    pagesLabel: "Tagesgruppen",
     daysOfTotal: (a, b, n) => `Tage ${a}–${b} von ${n}`,
     keyboardHint: "Mit der Tastatur: Pfeiltasten zum Bewegen, Leertaste zum Auswählen.",
     organizer: "Du bist der Organisator",

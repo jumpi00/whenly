@@ -356,9 +356,17 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .day-pager[hidden] { display: none; }
 .day-pager { flex-wrap: wrap; row-gap: 8px; }
 .pager-label { flex: 1; text-align: center; font-weight: 500; color: var(--text); }
-/* Posizione dei giorni visibili rispetto al totale */
-.pager-track { position: relative; flex-basis: 100%; height: 4px; border-radius: 2px; background: var(--cell); overflow: hidden; }
-.pager-track i { position: absolute; top: 0; bottom: 0; border-radius: 2px; background: var(--heat); transition: left .2s ease; }
+/* Paginazione dei gruppi di giorni */
+.pagination { flex-basis: 100%; display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; }
+.page-btn {
+  min-width: 32px; height: 32px; padding: 0 8px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+}
+.page-btn:hover { border-color: var(--muted); }
+.page-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.page-gap { color: var(--muted); padding: 0 2px; }
 .day-pager .btn { width: 38px; height: 38px; padding: 0; }
 
 .footer { color: var(--muted); font-size: 13px; padding-bottom: 32px; }
