@@ -249,7 +249,8 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 @media (max-width: 900px) { .event-cols { grid-template-columns: 1fr; } }
 .card h2 + .hint { margin-top: 2px; }
 .join-form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
-.join-form .btn { align-self: flex-start; }
+.join-form .btn { width: 100%; padding-block: 11px; }
+.btn.primary:disabled { opacity: .4; cursor: not-allowed; filter: grayscale(.4); }
 .status { font-size: 12px; color: var(--muted); min-height: 1.5em; margin: 8px 0 0; }
 
 /* Availability grid */

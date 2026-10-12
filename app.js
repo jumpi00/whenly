@@ -791,11 +791,16 @@ async function renderEvent(id) {
           <label class="field"><span>${t('password')} <span class="muted">${t('optional')}</span></span>
             <input type="password" name="password" maxlength="72" autocomplete="current-password">
           </label>
-          <button class="btn primary">${t('continue')}</button>
+          <button class="btn primary" disabled>${t('continue')}</button>
         </form>
         <p class="hint">${t('passwordHint')}</p>
         <div class="errors" id="join-err" role="alert"></div>`;
-      $('#join').addEventListener('input', e => clearInvalid(e.target));
+      // "Continua" si attiva solo quando c'è un nome.
+      $('#join').addEventListener('input', e => {
+        clearInvalid(e.target);
+        const form = e.currentTarget;
+        form.querySelector('button').disabled = !form.name.value.trim();
+      });
       $('#join').addEventListener('submit', async e => {
         e.preventDefault();
         const form = e.target;
@@ -821,7 +826,7 @@ async function renderEvent(id) {
         } catch (ex) {
           showErrors($('#join-err'), [`${t('error')} ${ex.message ?? ex}`]);
         } finally {
-          btn.disabled = false;
+          btn.disabled = !form.name.value.trim();
         }
       });
       return;
