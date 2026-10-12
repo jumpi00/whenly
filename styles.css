@@ -276,7 +276,8 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
   white-space: nowrap;
   transform: translateY(-50%);
 }
-.g-time.top, .g-time.gap { transform: translateY(-2px); }
+.g-time.thin { visibility: hidden; }
+
 .g-cell {
   height: 18px;
   background: var(--cell);
@@ -432,12 +433,10 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
   .event-head h1 { font-size: 28px; }
   .event-cols { display: contents; }
   .event-page .card { min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-  /* Le righe hanno un'altezza minima: se sono troppe, la griglia scorre al suo
-     interno e l'intestazione dei giorni resta visibile in alto. */
-  .event-page .grid-wrap { flex: 1; min-height: 0; margin-top: 10px; overflow-y: auto; overscroll-behavior: contain; }
-  .event-page .grid { min-height: 100%; grid-template-rows: auto repeat(var(--rows), minmax(16px, 1fr)); }
-  .event-page .g-head, .event-page .g-corner { position: sticky; top: 0; z-index: 3; }
-  .event-page .g-time { z-index: 2; }
+  /* Tutte le fasce entrano sempre nel riquadro: le righe si adattano all'altezza.
+     Le etichette sono una per ora, quindi restano distanziate anche con 24 ore. */
+  .event-page .grid-wrap { flex: 1; min-height: 0; margin-top: 10px; padding-top: 6px; }
+  .event-page .grid { height: 100%; grid-template-rows: auto repeat(var(--rows), minmax(0, 1fr)); }
   .event-page .g-cell, .event-page .g-empty { height: auto; min-height: 0; }
   .event-page .hover-info { flex: none; }
   .best { margin: 0; overflow-y: auto; }

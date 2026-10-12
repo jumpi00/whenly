@@ -720,6 +720,7 @@ async function renderEvent(id) {
     drawGroupGrid();
     renderGroup();
     renderPagers();
+    thinAllLabels();
   }
   function onPage(e) {
     const btn = e.target.closest('[data-page]');
@@ -731,12 +732,14 @@ async function renderEvent(id) {
   function onResize() {
     const next = measurePerPage();
     if (next !== perPage) { perPage = next; redrawGrids(); }
+    thinAllLabels();
   }
   addEventListener('resize', onResize);
 
   // kind: 'mine' (caselle selezionabili) oppure 'group' (sola lettura con dettaglio).
   function gridHTML(kind) {
     const dates = visibleDates();
+    let labelIndex = 0;
     let h = `<div class="g-corner"></div>`;
     dates.forEach(d => {
       const dt = parseDate(d);
@@ -749,7 +752,7 @@ async function renderEvent(id) {
       // Con intervalli che non dividono l'ora (45 min, 1 h 30, 2 h) ogni riga ha la sua etichetta.
       const onHour = afterGap || 60 % slot !== 0 || (m - times[0]) % 60 === 0;
       const gap = afterGap ? ' gap' : '';
-      h += `<div class="g-time${gap}${r === 0 ? ' top' : ''}">${onHour ? hhmm(m) : ''}</div>`;
+      h += `<div class="g-time${gap}"${onHour ? ` data-i="${labelIndex++}"` : ''}>${onHour ? hhmm(m) : ''}</div>`;
       dates.forEach((d, c) => {
         const key = L.at(d, m);
         if (!key) { h += `<div class="g-empty${gap}"></div>`; return; }
@@ -847,6 +850,7 @@ async function renderEvent(id) {
     });
     paint();
     initRoving(grid);
+    thinLabels(grid);
     rectSelect(grid, {
       getSet: () => mySlots,
       setSet: next => { mySlots = next; paint(); renderGroup(); },
@@ -904,11 +908,28 @@ async function renderEvent(id) {
   }
 
   // --- Vista di gruppo
+  // Con poco spazio verticale (es. 24 ore) mostra un'etichetta ogni 2, 3 o 4 ore,
+  // così gli orari non si sovrappongono; le linee delle ore restano tutte.
+  function thinLabels(grid) {
+    const cell = grid?.querySelector('.g-cell');
+    if (!cell) return;
+    const labelled = [...grid.querySelectorAll('.g-time[data-i]')];
+    const rowsPerLabel = 60 % slot === 0 ? 60 / slot : 1;
+    const gapPx = cell.getBoundingClientRect().height * rowsPerLabel;
+    const step = gapPx > 0 ? Math.max(1, Math.ceil(20 / gapPx)) : 1;
+    labelled.forEach(el => el.classList.toggle('thin', +el.dataset.i % step !== 0));
+  }
+  function thinAllLabels() {
+    thinLabels($('#my-grid'));
+    thinLabels($('#group-grid'));
+  }
+
   const groupGrid = $('#group-grid');
   function drawGroupGrid() {
     groupGrid.setAttribute('style', gridCols());
     groupGrid.innerHTML = gridHTML('group');
     initRoving(groupGrid);
+    thinLabels(groupGrid);
   }
   const hoverInfo = $('#hover-info');
   let hoverKey = null;
@@ -1136,6 +1157,7 @@ async function renderEvent(id) {
   drawGroupGrid();
   renderGroup();
   renderPagers();
+  thinAllLabels();
 
   // Aggiornamento in tempo reale quando qualcun altro risponde.
   const unsubscribe = store.subscribe(id, {
