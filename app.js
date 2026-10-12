@@ -23,7 +23,14 @@ function buildFormatters() {
     dayMonth: f({ day: 'numeric', month: 'short' }),
     long: f({ weekday: 'long', day: 'numeric', month: 'long' }),
     month: f({ month: 'short' }),
+    dayLongMonth: f({ day: 'numeric', month: 'long' }),
   };
+}
+
+// Intervallo di date con il mese per esteso: "19–25 ottobre", "26 ottobre – 1 novembre".
+function fmtSpan(a, b) {
+  try { return F.dayLongMonth.formatRange(a, b); }
+  catch { return `${F.dayLongMonth.format(a)} – ${F.dayLongMonth.format(b)}`; }
 }
 
 function fmtDuration(min) {
@@ -34,7 +41,7 @@ function fmtDuration(min) {
 
 function fmtDateRange(dates) {
   if (dates.length === 1) return cap(F.long.format(parseDate(dates[0])));
-  return `${F.dayMonth.format(parseDate(dates[0]))} – ${F.dayMonth.format(parseDate(dates.at(-1)))} · ${t('nDays', dates.length)}`;
+  return `${fmtSpan(parseDate(dates[0]), parseDate(dates.at(-1)))} · ${t('nDays', dates.length)}`;
 }
 
 // --- Contatti dell'organizzatore ----------------------------------------------
@@ -482,7 +489,7 @@ function renderCreate() {
     initRoving(cal, todayIso);
     const end = new Date(start);
     end.setDate(start.getDate() + WEEKS * 7 - 1);
-    $('#cal-range').textContent = `${F.dayMonth.format(start)} – ${F.dayMonth.format(end)}`;
+    $('#cal-range').textContent = fmtSpan(start, end);
     $('[data-nav="-1"]').disabled = weekOffset <= 0;
     updateCount();
   }
@@ -654,7 +661,7 @@ async function renderEvent(id) {
         ${ev.description ? `<p class="event-desc">${esc(ev.description)}</p>` : ''}
         ${contactLinks(ev.contact)}
         <p class="meta">${esc(fmtDateRange(dates))} · ${hhmm(times[0])}–${hhmm(times.at(-1) + slot)}
-          · <span class="expiry" title="${esc(t('autoDelete'))}">${esc(t('expiresOn', F.dayMonth.format(expiry)))}</span></p>
+          · <span class="expiry" title="${esc(t('autoDelete'))}">${esc(t('expiresOn', F.dayLongMonth.format(expiry)))}</span></p>
         <label class="tz-pick">
           <span>${t('showTimesIn')}</span>
           <select id="view-tz">${timeZoneOptions(viewTz)}</select>
@@ -710,7 +717,7 @@ async function renderEvent(id) {
     const shown = visibleDates();
     const html = dates.length > perPage
       ? `<button type="button" class="btn" data-page="-1" aria-label="${esc(t('prevDays'))}"${pageStart === 0 ? ' disabled' : ''}>${CHEVRON_LEFT}</button>
-         <span>${F.dayMonth.format(parseDate(shown[0]))} – ${F.dayMonth.format(parseDate(shown.at(-1)))} · ${pageStart + 1}–${pageStart + shown.length} / ${dates.length}</span>
+         <span class="pager-label"><b>${fmtSpan(parseDate(shown[0]), parseDate(shown.at(-1)))}</b> <span>${t('daysOfTotal', pageStart + 1, pageStart + shown.length, dates.length)}</span></span>
          <button type="button" class="btn" data-page="1" aria-label="${esc(t('nextDays'))}"${pageStart + perPage >= dates.length ? ' disabled' : ''}>${CHEVRON_RIGHT}</button>`
       : '';
     app.querySelectorAll('[data-pager]').forEach(el => { el.innerHTML = html; el.hidden = !html; });

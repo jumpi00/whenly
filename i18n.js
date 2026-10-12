@@ -3,6 +3,7 @@ export const LANGS = { it: 'Italiano', en: 'English', es: 'Español', fr: 'Fran�
 
 const dict = {
   it: {
+    daysOfTotal: (a, b, n) => `giorni ${a}–${b} di ${n}`,
     keyboardHint: "Da tastiera: usa le frecce per spostarti e la barra spaziatrice per selezionare.",
     organizer: "Sei l'organizzatore",
     copyAdminLink: "Copia link di gestione",
@@ -110,6 +111,7 @@ const dict = {
     missing: names => `Manca: ${names}`,
   },
   en: {
+    daysOfTotal: (a, b, n) => `days ${a}–${b} of ${n}`,
     keyboardHint: "With the keyboard: use the arrow keys to move and the space bar to select.",
     organizer: "You're the organizer",
     copyAdminLink: "Copy admin link",
@@ -217,6 +219,7 @@ const dict = {
     missing: names => `Missing: ${names}`,
   },
   es: {
+    daysOfTotal: (a, b, n) => `días ${a}–${b} de ${n}`,
     keyboardHint: "Con el teclado: usa las flechas para moverte y la barra espaciadora para seleccionar.",
     organizer: "Eres el organizador",
     copyAdminLink: "Copiar enlace de gestión",
@@ -324,6 +327,7 @@ const dict = {
     missing: names => `Falta: ${names}`,
   },
   fr: {
+    daysOfTotal: (a, b, n) => `jours ${a} à ${b} sur ${n}`,
     keyboardHint: "Au clavier : utilisez les flèches pour vous déplacer et la barre d'espace pour sélectionner.",
     organizer: "Vous êtes l'organisateur",
     copyAdminLink: "Copier le lien de gestion",
@@ -431,6 +435,7 @@ const dict = {
     missing: names => `Manque : ${names}`,
   },
   de: {
+    daysOfTotal: (a, b, n) => `Tage ${a}–${b} von ${n}`,
     keyboardHint: "Mit der Tastatur: Pfeiltasten zum Bewegen, Leertaste zum Auswählen.",
     organizer: "Du bist der Organisator",
     copyAdminLink: "Verwaltungslink kopieren",
