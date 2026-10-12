@@ -699,13 +699,13 @@ async function renderEvent(id) {
   let perPage = dates.length;
   function measurePerPage() {
     const width = $('#group').clientWidth - 40;
-    return Math.max(2, Math.min(dates.length, Math.floor((width - 52) / 46)));
+    return Math.max(2, Math.min(dates.length, Math.floor((width - 60) / 46)));
   }
   function visibleDates() {
     pageStart = Math.max(0, Math.min(pageStart, dates.length - perPage));
     return dates.slice(pageStart, pageStart + perPage);
   }
-  const gridCols = () => `grid-template-columns: 52px repeat(${visibleDates().length}, minmax(0, 1fr)); --rows: ${times.length}`;
+  const gridCols = () => `grid-template-columns: 60px repeat(${visibleDates().length}, minmax(0, 1fr)); --rows: ${times.length}`;
   function renderPagers() {
     const shown = visibleDates();
     const html = dates.length > perPage
@@ -749,7 +749,7 @@ async function renderEvent(id) {
       // Con intervalli che non dividono l'ora (45 min, 1 h 30, 2 h) ogni riga ha la sua etichetta.
       const onHour = afterGap || 60 % slot !== 0 || (m - times[0]) % 60 === 0;
       const gap = afterGap ? ' gap' : '';
-      h += `<div class="g-time${gap}">${onHour ? hhmm(m) : ''}</div>`;
+      h += `<div class="g-time${gap}${r === 0 ? ' top' : ''}">${onHour ? hhmm(m) : ''}</div>`;
       dates.forEach((d, c) => {
         const key = L.at(d, m);
         if (!key) { h += `<div class="g-empty${gap}"></div>`; return; }

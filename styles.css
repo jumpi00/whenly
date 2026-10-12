@@ -261,19 +261,22 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
   user-select: none;
 }
 .grid.paint { touch-action: none; }
-.g-corner { position: sticky; left: 0; background: var(--surface); z-index: 1; }
-.g-head { text-align: center; padding-bottom: 8px; line-height: 1.2; min-width: 0; overflow: hidden; white-space: nowrap; }
+.g-corner { background: var(--surface); }
+.g-head { text-align: center; padding-bottom: 10px; line-height: 1.2; background: var(--surface); min-width: 0; overflow: hidden; white-space: nowrap; }
 .g-head span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
 .g-head b { font-weight: 500; font-size: 13px; }
 .g-time {
-  position: sticky; left: 0; z-index: 1;
-  background: var(--surface);
-  font: 400 11px/1 var(--mono);
+  /* Etichetta centrata sulla linea dell'ora, senza sfondo: non copre quelle vicine */
+  position: relative; z-index: 1;
+  align-self: start;
+  font: 400 12px/1 var(--mono);
   color: var(--muted);
-  padding-right: 8px;
+  padding-right: 10px;
   text-align: right;
-  transform: translateY(-5px);
+  white-space: nowrap;
+  transform: translateY(-50%);
 }
+.g-time.top, .g-time.gap { transform: translateY(-2px); }
 .g-cell {
   height: 18px;
   background: var(--cell);
@@ -429,8 +432,12 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
   .event-head h1 { font-size: 28px; }
   .event-cols { display: contents; }
   .event-page .card { min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-  .event-page .grid-wrap { flex: 1; min-height: 0; margin-top: 10px; }
-  .event-page .grid { height: 100%; grid-template-rows: auto repeat(var(--rows), minmax(0, 1fr)); }
+  /* Le righe hanno un'altezza minima: se sono troppe, la griglia scorre al suo
+     interno e l'intestazione dei giorni resta visibile in alto. */
+  .event-page .grid-wrap { flex: 1; min-height: 0; margin-top: 10px; overflow-y: auto; overscroll-behavior: contain; }
+  .event-page .grid { min-height: 100%; grid-template-rows: auto repeat(var(--rows), minmax(16px, 1fr)); }
+  .event-page .g-head, .event-page .g-corner { position: sticky; top: 0; z-index: 3; }
+  .event-page .g-time { z-index: 2; }
   .event-page .g-cell, .event-page .g-empty { height: auto; min-height: 0; }
   .event-page .hover-info { flex: none; }
   .best { margin: 0; overflow-y: auto; }
