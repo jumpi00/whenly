@@ -3,6 +3,7 @@ export const LANGS = { it: 'Italiano', en: 'English', es: 'Español', fr: 'Fran�
 
 const dict = {
   it: {
+    loginToSeeShort: "Inserisci il tuo nome per vedere chi è disponibile",
     copyLinkShort: "Copia link",
     linkCopiedShort: "Copiato ✓",
     newEventBtn: "Nuovo evento",
@@ -116,6 +117,7 @@ const dict = {
     missing: names => `Manca: ${names}`,
   },
   en: {
+    loginToSeeShort: "Enter your name to see who's available",
     copyLinkShort: "Copy link",
     linkCopiedShort: "Copied ✓",
     newEventBtn: "New event",
@@ -229,6 +231,7 @@ const dict = {
     missing: names => `Missing: ${names}`,
   },
   es: {
+    loginToSeeShort: "Escribe tu nombre para ver quién está disponible",
     copyLinkShort: "Copiar enlace",
     linkCopiedShort: "Copiado ✓",
     newEventBtn: "Nuevo evento",
@@ -342,6 +345,7 @@ const dict = {
     missing: names => `Falta: ${names}`,
   },
   fr: {
+    loginToSeeShort: "Saisissez votre nom pour voir qui est disponible",
     copyLinkShort: "Copier le lien",
     linkCopiedShort: "Copié ✓",
     newEventBtn: "Nouvel événement",
@@ -455,6 +459,7 @@ const dict = {
     missing: names => `Manque : ${names}`,
   },
   de: {
+    loginToSeeShort: "Gib deinen Namen ein, um zu sehen, wer Zeit hat",
     copyLinkShort: "Link kopieren",
     linkCopiedShort: "Kopiert ✓",
     newEventBtn: "Neuer Termin",

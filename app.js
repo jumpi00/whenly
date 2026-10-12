@@ -61,6 +61,8 @@ const icon = path => `<svg viewBox="0 0 24 24" width="15" height="15" aria-hidde
 const CHEVRON_LEFT = icon('<path d="m15 18-6-6 6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const CHEVRON_RIGHT = icon('<path d="m9 18 6-6-6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const ICONS = {
+  arrowLeft: icon('<path d="M19 12H5"/><path d="m11 6-6 6 6 6"/>'),
+  arrowUp: icon('<path d="M12 19V5"/><path d="m6 11 6-6 6 6"/>'),
   plus: icon('<path d="M12 5v14"/><path d="M5 12h14"/>'),
   people: icon('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>'),
   chevronDown: icon('<path d="m6 9 6 6 6-6"/>'),
@@ -693,7 +695,16 @@ async function renderEvent(id) {
         </div>
         <div class="legend" id="legend"></div>
         <div class="day-pager" data-pager></div>
-        <div class="grid-wrap"><div class="grid readonly" id="group-grid" role="group" aria-label="${esc(t('groupTitle'))}"></div></div>
+        <div class="grid-wrap">
+          <div class="grid readonly" id="group-grid" role="group" aria-label="${esc(t('groupTitle'))}"></div>
+          <div class="lock-overlay" id="lock-overlay" hidden>
+            <button type="button" class="lock-pill" id="lock-pill">
+              <span class="lock-arrow lock-arrow-left" aria-hidden="true">${ICONS.arrowLeft}</span>
+              <span class="lock-arrow lock-arrow-up" aria-hidden="true">${ICONS.arrowUp}</span>
+              <span>${t('loginToSeeShort')}</span>
+            </button>
+          </div>
+        </div>
         <div class="page-bar-wrap" data-pagebar></div>
         <div class="hover-info" id="hover-info" aria-live="polite"></div>
       </section>
@@ -991,8 +1002,11 @@ async function renderEvent(id) {
     const { all, included, byKey } = availability();
     const total = included.length;
     // Prima di entrare con il proprio nome, la vista di gruppo resta disabilitata.
+    // La heatmap resta visibile (sbiadita); dettagli, nomi e filtri restano bloccati.
     $('#group').classList.toggle('locked', !me);
-    $('#group').toggleAttribute('inert', !me);
+    $('#lock-overlay').hidden = !!me;
+    [groupGrid, $('#responders'), $('#legend'), ...$('#group').querySelectorAll('[data-pager], [data-pagebar]')]
+      .forEach(el => el.toggleAttribute('inert', !me));
 
     // "N risposte" apre l'elenco di chi ha risposto (al passaggio del mouse o al tocco).
     const countBtn = $('#group-count');
@@ -1027,7 +1041,7 @@ async function renderEvent(id) {
 
   function showHover(key, byKey, included) {
     groupGrid.querySelectorAll('.hover').forEach(el => el.classList.remove('hover'));
-    if (!me) { hoverInfo.innerHTML = `🔒 ${t('loginToSee')}`; return; }
+    if (!me) { hoverInfo.innerHTML = ''; return; }
     if (!key || !included.length) { hoverInfo.innerHTML = included.length ? t('hoverDefault') : t('noResponses'); return; }
     groupGrid.querySelector(`[data-k="${key}"]`)?.classList.add('hover');
     const { date, min } = L.pos(key);
@@ -1072,6 +1086,14 @@ async function renderEvent(id) {
     }
   };
   document.addEventListener('pointerdown', closeResponders);
+
+  // La pillola sopra la griglia bloccata porta al campo "Nome".
+  $('#lock-pill').addEventListener('click', () => {
+    const name = $('#join')?.name;
+    if (!name) return;
+    name.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    name.focus({ preventScroll: true });
+  });
 
   $('#people').addEventListener('click', e => {
     const chip = e.target.closest('[data-name]');
@@ -1173,7 +1195,7 @@ async function renderEvent(id) {
       // Conferma visibile anche su telefono, dove resta solo l'icona: diventa una spunta.
       btn.innerHTML = `${ICONS.check}<span>${t('linkCopiedShort')}</span>`;
     } catch {
-      prompt(t('copyPrompt'), eventLink(id));
+      try { prompt(t('copyPrompt'), eventLink(id)); } catch {}
     }
     setTimeout(() => { btn.innerHTML = original; }, 2000);
   });
@@ -1230,7 +1252,7 @@ async function renderEvent(id) {
         await navigator.clipboard.writeText(adminLink(id, adminKey));
         btn.textContent = t('adminLinkCopied');
       } catch {
-        prompt(t('copyPrompt'), adminLink(id, adminKey));
+        try { prompt(t('copyPrompt'), adminLink(id, adminKey)); } catch {}
       }
       setTimeout(() => { btn.textContent = t('copyAdminLink'); }, 2000);
     });
