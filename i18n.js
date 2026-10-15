@@ -3,6 +3,8 @@ export const LANGS = { it: 'Italiano', en: 'English', es: 'Español', fr: 'Fran�
 
 const dict = {
   it: {
+    prevShort: "Precedenti",
+    nextShort: "Successivi",
     startAt: "Inizio",
     duration: "Durata",
     confirmTime: "Conferma orario",
@@ -121,6 +123,8 @@ const dict = {
     missing: names => `Manca: ${names}`,
   },
   en: {
+    prevShort: "Prev",
+    nextShort: "Next",
     startAt: "Start",
     duration: "Length",
     confirmTime: "Confirm time",
@@ -239,6 +243,8 @@ const dict = {
     missing: names => `Missing: ${names}`,
   },
   es: {
+    prevShort: "Anteriores",
+    nextShort: "Siguientes",
     startAt: "Inicio",
     duration: "Duración",
     confirmTime: "Confirmar horario",
@@ -357,6 +363,8 @@ const dict = {
     missing: names => `Falta: ${names}`,
   },
   fr: {
+    prevShort: "Précédents",
+    nextShort: "Suivants",
     startAt: "Début",
     duration: "Durée",
     confirmTime: "Confirmer le créneau",
@@ -475,6 +483,8 @@ const dict = {
     missing: names => `Manque : ${names}`,
   },
   de: {
+    prevShort: "Zurück",
+    nextShort: "Weiter",
     startAt: "Beginn",
     duration: "Dauer",
     confirmTime: "Zeit bestätigen",

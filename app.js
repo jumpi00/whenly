@@ -764,9 +764,9 @@ async function renderEvent(id) {
   function renderPagers() {
     const shown = visibleDates();
     const html = dates.length > perPage
-      ? `<button type="button" class="btn" data-page="-1" aria-label="${esc(t('prevDays'))}"${pageStart === 0 ? ' disabled' : ''}>${CHEVRON_LEFT}</button>
+      ? `<button type="button" class="btn" data-page="-1" aria-label="${esc(t('prevDays'))}"${pageStart === 0 ? ' disabled' : ''}>${CHEVRON_LEFT}<span class="pager-text">${t('prevShort')}</span></button>
          <span class="pager-label">${fmtSpan(parseDate(shown[0]), parseDate(shown.at(-1)))}</span>
-         <button type="button" class="btn" data-page="1" aria-label="${esc(t('nextDays'))}"${pageStart + perPage >= dates.length ? ' disabled' : ''}>${CHEVRON_RIGHT}</button>`
+         <button type="button" class="btn" data-page="1" aria-label="${esc(t('nextDays'))}"${pageStart + perPage >= dates.length ? ' disabled' : ''}><span class="pager-text">${t('nextShort')}</span>${CHEVRON_RIGHT}</button>`
       : '';
     app.querySelectorAll('[data-pager]').forEach(el => { el.innerHTML = html; el.hidden = !html; });
     // Barra delle pagine sotto la griglia, come una barra di scorrimento.
