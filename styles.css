@@ -705,18 +705,15 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
 
 /* Telefono e tablet: testata del gruppo (titolo, settimana, frecce, giorni) fissa in alto */
 @media (max-width: 1023px), (max-height: 659px) {
-  /* Copre la parte alta della card (bordo e angoli arrotondati inclusi), così
-     quando resta fissa in alto il riquadro resta riconoscibile. */
+  /* Larga quanto la card (dentro il bordo), senza angoli arrotondati */
   .group-sticky {
     position: sticky; top: 0; z-index: 6;
-    margin: calc(-1 * var(--pad-y) - 1px) calc(-1 * var(--pad-x) - 1px) 0;
-    padding: var(--pad-y) var(--pad-x) 8px;
+    margin: 0 calc(-1 * var(--pad-x));
+    padding: 8px var(--pad-x);
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-bottom: 0;
-    border-radius: var(--radius) var(--radius) 0 0;
     box-shadow: 0 1px 0 var(--border);
   }
+  #group { padding-top: calc(var(--pad-y) - 8px); }
   #group .g-head, #group .g-corner {
     position: sticky; top: var(--sticky-h, 0px); z-index: 5;
     background: var(--surface);
