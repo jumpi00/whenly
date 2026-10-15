@@ -662,7 +662,8 @@ async function renderEvent(id) {
   // Durate minime proposte: multipli dell'intervallo che entrano nella fascia oraria.
   const durOptions = [...new Set([1, 2, 3, 4, 6, 8].map(k => k * slot))]
     .filter(d => d <= ev.end_minute - ev.start_minute);
-  let minDuration = durOptions.find(d => d >= 60) ?? durOptions.at(-1) ?? slot;
+  // 0 = tutte le durate: mostra subito i momenti con più persone, anche se brevi.
+  let minDuration = 0;
 
   app.innerHTML = `
     <div class="event-page">
@@ -686,6 +687,7 @@ async function renderEvent(id) {
     <div class="event-cols">
       <section class="card" id="mine"></section>
       <section class="card" id="group">
+        <div class="group-sticky" id="group-sticky">
         <div class="row-between">
           <div class="title-group"><h2>${t('groupTitle')}</h2><span class="week-of" id="week-of"></span></div>
           <div class="responders" id="responders">
@@ -699,6 +701,7 @@ async function renderEvent(id) {
         </div>
         <div class="legend" id="legend"></div>
         <div class="day-pager" data-pager></div>
+        </div>
         <div class="grid-wrap">
           <div class="grid readonly" id="group-grid" role="group" aria-label="${esc(t('groupTitle'))}"></div>
           <div class="lock-overlay" id="lock-overlay" hidden>
@@ -713,7 +716,6 @@ async function renderEvent(id) {
           </div>
         </div>
         <div class="hover-info" id="hover-info" aria-live="polite"></div>
-        <div class="week-cards" id="week-cards"></div>
       </section>
     </div>
     </div>
@@ -721,7 +723,7 @@ async function renderEvent(id) {
       <div class="row-between">
         <h2>${t('bestTitle')}</h2>
         <label class="cal-nav">${t('minDuration')}
-          <select id="min-dur" style="width:auto">${durOptions.map(d => `<option value="${d}"${d === minDuration ? ' selected' : ''}>${fmtDuration(d)}</option>`).join('')}</select>
+          <select id="min-dur" style="width:auto"><option value="0" selected>${t('allDurations')}</option>${durOptions.map(d => `<option value="${d}"${d === minDuration ? ' selected' : ''}>${fmtDuration(d)}</option>`).join('')}</select>
         </label>
       </div>
       <ol id="best-list"></ol>
@@ -762,34 +764,14 @@ async function renderEvent(id) {
       : '';
     app.querySelectorAll('[data-pager]').forEach(el => { el.innerHTML = html; el.hidden = !html; });
     $('#week-of').textContent = many ? t('weekOf', weekIndex + 1, weeks.length) : '';
+    updateStickyOffset();
   }
 
-  // Schede settimana sotto la griglia del gruppo: per ogni settimana una mini-heatmap
-  // dei 7 giorni, il massimo di persone disponibili e il giorno migliore.
-  function renderWeekCards(byKey, included) {
-    const box = $('#week-cards');
-    if (weeks.length < 2) { box.innerHTML = ''; return; }
-    const total = included.length;
-    const dayMax = d => Math.max(0, ...times.map(m => byKey.get(L.at(d, m))?.length ?? 0));
-    box.innerHTML = weeks.map((w, i) => {
-      const monday = parseDate(w.key);
-      const cells = Array.from({ length: 7 }, (_, k) => {
-        const day = new Date(monday); day.setDate(monday.getDate() + k);
-        const iso = isoDate(day);
-        if (!w.dates.includes(iso)) return '<i class="off"></i>';
-        return `<i style="background:${total ? heat(dayMax(iso) / total) : 'var(--cell)'}"></i>`;
-      }).join('');
-      let best = 0, bestDay = null;
-      for (const d of w.dates) { const n = dayMax(d); if (n > best) { best = n; bestDay = d; } }
-      const range = fmtSpan(parseDate(w.dates[0]), parseDate(w.dates.at(-1)));
-      return `<button type="button" class="week-card" data-goto-week="${i}" aria-current="${i === weekIndex}" aria-label="${esc(`${t('weekShort', i + 1)} · ${range}`)}">
-        <span class="wc-top"><b>${t('weekShort', i + 1)}</b>${total ? `<span>${best}/${total} max</span>` : ''}</span>
-        <span class="wc-range">${range}</span>
-        <span class="wc-mini">${cells}</span>
-        <span class="wc-best">${bestDay ? `${t('bestDayLabel')} <b>${F.weekday.format(parseDate(bestDay))} ${parseDate(bestDay).getDate()}</b>` : t('noAvailShort')}</span>
-      </button>`;
-    }).join('');
-    box.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  // Su telefono la testata del gruppo resta fissa in alto: la riga dei giorni
+  // si ferma subito sotto, quindi serve sapere quanto è alta.
+  function updateStickyOffset() {
+    const head = $('#group-sticky');
+    if (head) $('#group').style.setProperty('--sticky-h', `${head.offsetHeight}px`);
   }
 
   function redrawGrids() {
@@ -808,7 +790,7 @@ async function renderEvent(id) {
     redrawGrids();
   }
   app.addEventListener('click', onPage);
-  function onResize() { thinAllLabels(); }
+  function onResize() { thinAllLabels(); updateStickyOffset(); }
   addEventListener('resize', onResize);
 
   // kind: 'mine' (caselle selezionabili) oppure 'group' (sola lettura con dettaglio).
@@ -1023,7 +1005,7 @@ async function renderEvent(id) {
     // La heatmap resta visibile (sbiadita); dettagli, nomi e filtri restano bloccati.
     $('#group').classList.toggle('locked', !me);
     $('#lock-overlay').hidden = !!me;
-    [groupGrid, $('#responders'), $('#legend'), $('#week-cards'), ...$('#group').querySelectorAll('[data-pager]')]
+    [groupGrid, $('#responders'), $('#legend'), ...$('#group').querySelectorAll('[data-pager]')]
       .forEach(el => el.toggleAttribute('inert', !me));
 
     // "N risposte" apre l'elenco di chi ha risposto (al passaggio del mouse o al tocco).
@@ -1050,7 +1032,7 @@ async function renderEvent(id) {
     });
     showHover(hoverKey, byKey, included);
     renderBest(byKey, included);
-    renderWeekCards(byKey, included);
+    updateStickyOffset();
   }
 
   function heat(ratio) {
@@ -1176,7 +1158,7 @@ async function renderEvent(id) {
       || a.date.localeCompare(b.date) || a.slots[0].min - b.slots[0].min);
     const top = blocks.slice(0, 6);
     if (!top.length) {
-      list.innerHTML = `<p class="empty">${t('bestNone', fmtDuration(minDuration))}</p>`;
+      list.innerHTML = `<p class="empty">${minDuration ? t('bestNone', fmtDuration(minDuration)) : t('noAvailShort')}</p>`;
       return;
     }
     list.innerHTML = top.map((b, i) => {

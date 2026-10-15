@@ -3,6 +3,7 @@ export const LANGS = { it: 'Italiano', en: 'English', es: 'Español', fr: 'Fran�
 
 const dict = {
   it: {
+    allDurations: "Tutte le durate",
     weekOf: (n, m) => `Settimana ${n} di ${m}`,
     weekShort: n => `Sett. ${n}`,
     bestDayLabel: "Migliore:",
@@ -127,6 +128,7 @@ const dict = {
     missing: names => `Manca: ${names}`,
   },
   en: {
+    allDurations: "Any length",
     weekOf: (n, m) => `Week ${n} of ${m}`,
     weekShort: n => `Week ${n}`,
     bestDayLabel: "Best:",
@@ -251,6 +253,7 @@ const dict = {
     missing: names => `Missing: ${names}`,
   },
   es: {
+    allDurations: "Todas las duraciones",
     weekOf: (n, m) => `Semana ${n} de ${m}`,
     weekShort: n => `Sem. ${n}`,
     bestDayLabel: "Mejor:",
@@ -375,6 +378,7 @@ const dict = {
     missing: names => `Falta: ${names}`,
   },
   fr: {
+    allDurations: "Toutes durées",
     weekOf: (n, m) => `Semaine ${n} sur ${m}`,
     weekShort: n => `Sem. ${n}`,
     bestDayLabel: "Meilleur :",
@@ -499,6 +503,7 @@ const dict = {
     missing: names => `Manque : ${names}`,
   },
   de: {
+    allDurations: "Alle Dauern",
     weekOf: (n, m) => `Woche ${n} von ${m}`,
     weekShort: n => `Woche ${n}`,
     bestDayLabel: "Beste:",

@@ -192,7 +192,6 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .card.locked .responders { opacity: .4; filter: grayscale(1); pointer-events: none; }
 /* Disponibilità visibili ma sbiadite finché non si entra con il proprio nome */
 .card.locked .legend,
-.card.locked .week-cards,
 .card.locked .grid { opacity: .5; pointer-events: none; }
 .card.locked,
 .card.locked h2 { color: var(--muted); }
@@ -683,34 +682,23 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
 .week-of:empty { display: none; }
 .g-day-short { display: none; }
 
-.week-cards {
-  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(150px, 1fr);
-  gap: 8px; margin-top: 10px; overflow-x: auto; scroll-snap-type: x mandatory;
-  scrollbar-width: none; flex: none;
-}
-.week-cards::-webkit-scrollbar { display: none; }
-.week-cards:empty { display: none; }
-.week-card {
-  display: flex; flex-direction: column; gap: 5px; min-width: 0;
-  padding: 9px 11px; border-radius: 10px; text-align: left; cursor: pointer;
-  border: 1px solid var(--border); background: var(--surface);
-  scroll-snap-align: start;
-}
-.week-card:hover { border-color: var(--muted); }
-.week-card[aria-current="true"] { border-color: var(--accent-text); box-shadow: inset 0 0 0 1px var(--accent-text); }
-.wc-top { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; color: var(--muted); }
-.wc-top b { color: var(--text); font-weight: 600; }
-.wc-range { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wc-mini { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-.wc-mini i { height: 7px; border-radius: 2px; background: var(--cell); }
-.wc-mini i.off { background: none; box-shadow: inset 0 0 0 1px var(--border); }
-.wc-best { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wc-best b { color: var(--accent-text); font-weight: 600; }
-
 @media (max-width: 520px) {
   :root { --gutter: 42px; }
   .g-time { padding-right: 6px; font-size: 11px; }
   .g-day-full { display: none; }
   .g-day-short { display: block; }
-  .week-cards { grid-auto-columns: 72%; }
+}
+
+/* Telefono e tablet: testata del gruppo (titolo, settimana, frecce, giorni) fissa in alto */
+@media (max-width: 1023px), (max-height: 659px) {
+  .group-sticky {
+    position: sticky; top: 0; z-index: 6;
+    background: var(--surface);
+    padding-bottom: 6px;
+    box-shadow: 0 1px 0 var(--border);
+  }
+  #group .g-head, #group .g-corner {
+    position: sticky; top: var(--sticky-h, 0px); z-index: 5;
+    background: var(--surface);
+  }
 }
