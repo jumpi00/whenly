@@ -3,6 +3,8 @@ export const LANGS = { it: 'Italiano', en: 'English', es: 'Español', fr: 'Fran�
 
 const dict = {
   it: {
+    daysHintTouch: "Tocca un giorno per selezionarlo; tieni premuto e trascina per selezionarne tanti.",
+    paintHintTouch: "Tocca le caselle in cui sei libero; tieni premuto e trascina per selezionarne tante. Scorri con il dito per muoverti.",
     allDurations: "Tutte le durate",
     weekOf: (n, m) => `Settimana ${n} di ${m}`,
     weekShort: n => `Sett. ${n}`,
@@ -128,6 +130,8 @@ const dict = {
     missing: names => `Manca: ${names}`,
   },
   en: {
+    daysHintTouch: "Tap a day to select it; press and hold, then drag to select several.",
+    paintHintTouch: "Tap the slots when you're free; press and hold, then drag to select many. Swipe to scroll.",
     allDurations: "Any length",
     weekOf: (n, m) => `Week ${n} of ${m}`,
     weekShort: n => `Week ${n}`,
@@ -253,6 +257,8 @@ const dict = {
     missing: names => `Missing: ${names}`,
   },
   es: {
+    daysHintTouch: "Toca un día para seleccionarlo; mantén pulsado y arrastra para seleccionar varios.",
+    paintHintTouch: "Toca las casillas en las que estás libre; mantén pulsado y arrastra para seleccionar muchas. Desliza para moverte.",
     allDurations: "Todas las duraciones",
     weekOf: (n, m) => `Semana ${n} de ${m}`,
     weekShort: n => `Sem. ${n}`,
@@ -378,6 +384,8 @@ const dict = {
     missing: names => `Falta: ${names}`,
   },
   fr: {
+    daysHintTouch: "Touchez un jour pour le sélectionner ; maintenez puis faites glisser pour en sélectionner plusieurs.",
+    paintHintTouch: "Touchez les cases où vous êtes libre ; maintenez puis faites glisser pour en sélectionner plusieurs. Faites défiler avec le doigt.",
     allDurations: "Toutes durées",
     weekOf: (n, m) => `Semaine ${n} sur ${m}`,
     weekShort: n => `Sem. ${n}`,
@@ -503,6 +511,8 @@ const dict = {
     missing: names => `Manque : ${names}`,
   },
   de: {
+    daysHintTouch: "Tippe auf einen Tag, um ihn auszuwählen; gedrückt halten und ziehen, um mehrere auszuwählen.",
+    paintHintTouch: "Tippe auf die Felder, in denen du Zeit hast; gedrückt halten und ziehen, um mehrere auszuwählen. Wische zum Scrollen.",
     allDurations: "Alle Dauern",
     weekOf: (n, m) => `Woche ${n} von ${m}`,
     weekShort: n => `Woche ${n}`,

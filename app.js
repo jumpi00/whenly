@@ -157,12 +157,17 @@ const session = {
 
 // Selezione a rettangolo con trascinamento (mouse e touch), come When2meet.
 // Le celle selezionabili hanno data-k (chiave), data-c (colonna), data-r (riga).
+// Con il mouse: trascinamento a rettangolo. Al tocco (telefono): il dito scorre la
+// pagina; un tocco seleziona una casella; tenere premuto e poi trascinare seleziona
+// un rettangolo, come con il mouse.
 function rectSelect(root, { getSet, setSet, onEnd }) {
   let start = null, mode = false, snapshot = null;
+  let touch = null, longPress = null;
+  const LONG_PRESS_MS = 400, MOVE_TOLERANCE = 10;
 
   const cellAt = (x, y) => {
     const el = document.elementFromPoint(x, y)?.closest('[data-k]');
-    return el && root.contains(el) ? el : null;
+    return el && root.contains(el) && !el.hasAttribute('data-off') ? el : null;
   };
   const apply = cur => {
     const [c0, c1] = [+start.dataset.c, +cur.dataset.c].sort((a, b) => a - b);
@@ -176,30 +181,67 @@ function rectSelect(root, { getSet, setSet, onEnd }) {
     });
     setSet(next);
   };
+  const begin = el => {
+    snapshot = new Set(getSet());
+    mode = !snapshot.has(el.dataset.k);
+    start = el;
+    root.classList.add('selecting');
+    apply(el);
+  };
+  const stop = () => {
+    clearTimeout(longPress);
+    longPress = null;
+    const wasTap = touch && !touch.moved && !start;
+    const tapped = touch?.el;
+    touch = null;
+    if (wasTap) { begin(tapped); }
+    if (!start) return;
+    start = null;
+    root.classList.remove('selecting');
+    onEnd?.();
+  };
 
   root.addEventListener('pointerdown', e => {
     if (e.button > 0) return;
     const el = e.target.closest('[data-k]');
     if (!el || el.hasAttribute('data-off')) return;
+    if (e.pointerType === 'touch') {
+      // Non blocca lo scorrimento: aspetta di capire se è un tocco, un trascinamento
+      // della pagina o una pressione prolungata.
+      touch = { el, x: e.clientX, y: e.clientY, moved: false };
+      clearTimeout(longPress);
+      longPress = setTimeout(() => {
+        if (!touch || touch.moved) return;
+        navigator.vibrate?.(10);
+        begin(touch.el);
+      }, LONG_PRESS_MS);
+      return;
+    }
     e.preventDefault();
     root.setPointerCapture(e.pointerId);
-    snapshot = new Set(getSet());
-    mode = !snapshot.has(el.dataset.k);
-    start = el;
-    apply(el);
+    begin(el);
   });
   root.addEventListener('pointermove', e => {
+    if (touch && !start) {
+      if (Math.hypot(e.clientX - touch.x, e.clientY - touch.y) > MOVE_TOLERANCE) {
+        touch.moved = true;
+        clearTimeout(longPress);
+      }
+      return;
+    }
     if (!start) return;
     const el = cellAt(e.clientX, e.clientY);
     if (el) apply(el);
   });
-  const stop = () => {
-    if (!start) return;
-    start = null;
-    onEnd?.();
-  };
+  // Durante la selezione dopo la pressione prolungata, il dito non deve scorrere la pagina.
+  root.addEventListener('touchmove', e => { if (start) e.preventDefault(); }, { passive: false });
+  root.addEventListener('contextmenu', e => { if (touch || start) e.preventDefault(); });
   root.addEventListener('pointerup', stop);
-  root.addEventListener('pointercancel', stop);
+  root.addEventListener('pointercancel', () => {
+    clearTimeout(longPress);
+    if (touch) touch.moved = true;
+    stop();
+  });
 }
 
 // Navigazione da tastiera nelle griglie (calendario e disponibilità):
@@ -425,7 +467,7 @@ function renderCreate() {
               <button type="button" class="btn" data-nav="1" aria-label="${esc(t('nextWeeks'))}">${CHEVRON_RIGHT}</button>
             </div>
           </div>
-          <p class="hint" id="cal-hint">${t('daysHint')} <span class="sr-only">${t('keyboardHint')}</span></p>
+          <p class="hint" id="cal-hint"><span class="hint-mouse">${t('daysHint')}</span><span class="hint-touch">${t('daysHintTouch')}</span> <span class="sr-only">${t('keyboardHint')}</span></p>
           <div class="cal" id="cal" role="group" aria-label="${esc(t('days'))}" aria-describedby="cal-hint"></div>
           <p class="hint" id="cal-count" aria-live="polite"></p>
           <p class="hint">${t('autoDelete')}</p>
@@ -896,7 +938,7 @@ async function renderEvent(id) {
         <h2>${t('yourAvailability')}</h2>
         <span class="muted">${myPassword ? `<span title="${esc(t('protected'))}">🔒</span> ` : ''}${esc(me)} · <button class="link-btn" id="change-name">${t('logout')}</button></span>
       </div>
-      <p class="hint" id="paint-hint">${t('paintHint')} <span class="sr-only">${t('keyboardHint')}</span></p>
+      <p class="hint" id="paint-hint"><span class="hint-mouse">${t('paintHint')}</span><span class="hint-touch">${t('paintHintTouch')}</span> <span class="sr-only">${t('keyboardHint')}</span></p>
       <div class="day-pager" data-pager></div>
       <div class="grid-wrap"><div class="grid paint" id="my-grid" role="group" aria-label="${esc(t('yourAvailability'))}" aria-describedby="paint-hint" style="${gridCols()}">${gridHTML('mine')}</div></div>
       <p class="status" id="save-status" role="status"></p>`;

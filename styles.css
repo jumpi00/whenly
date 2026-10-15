@@ -274,7 +274,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 .cal {
   /* minmax(0, 1fr): le colonne non superano mai la larghezza disponibile */
   display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px;
-  user-select: none; touch-action: none; margin-top: 8px;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: pan-y; margin-top: 8px;
 }
 .cal-dow { text-align: center; font-size: 12px; color: var(--muted); padding: 2px 0; }
 .cal-day {
@@ -327,7 +327,14 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
   gap: 0 3px;
   user-select: none;
 }
-.grid.paint { touch-action: none; }
+.grid.paint { touch-action: pan-y; -webkit-user-select: none; -webkit-touch-callout: none; }
+.grid.paint.selecting .g-cell { cursor: crosshair; }
+/* Testo di aiuto diverso per mouse e touch */
+.hint-touch { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .hint-mouse { display: none; }
+  .hint-touch { display: inline; }
+}
 .g-corner { background: var(--surface); }
 .g-head { text-align: center; padding-bottom: 10px; line-height: 1.2; background: var(--surface); min-width: 0; overflow: hidden; white-space: nowrap; }
 .g-head span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
