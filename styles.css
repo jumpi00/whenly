@@ -69,6 +69,7 @@
 }
 
 * { box-sizing: border-box; }
+html, body { overflow-x: clip; overscroll-behavior-x: none; }
 body {
   margin: 0;
   background: var(--bg);
@@ -124,7 +125,8 @@ textarea { resize: vertical; min-height: 64px; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px;
+  --pad-y: 20px; --pad-x: 20px;
+  padding: var(--pad-y) var(--pad-x);
 }
 .stack > * + * { margin-top: 20px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
@@ -671,7 +673,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
 
 /* --- Telefono: calendario più grande e facile da toccare ------------------------ */
 @media (max-width: 520px) {
-  .card { padding: 16px 14px; }
+  .card { --pad-y: 16px; --pad-x: 14px; }
   /* Il calendario si allarga fin quasi al bordo del riquadro per caselle più grandi */
   .create-form .cal { gap: 4px; margin-inline: -9px; }
   .cal-day { aspect-ratio: auto; min-height: 54px; font-size: 17px; border-radius: 10px; }
@@ -698,10 +700,16 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
 
 /* Telefono e tablet: testata del gruppo (titolo, settimana, frecce, giorni) fissa in alto */
 @media (max-width: 1023px), (max-height: 659px) {
+  /* Copre la parte alta della card (bordo e angoli arrotondati inclusi), così
+     quando resta fissa in alto il riquadro resta riconoscibile. */
   .group-sticky {
     position: sticky; top: 0; z-index: 6;
+    margin: calc(-1 * var(--pad-y) - 1px) calc(-1 * var(--pad-x) - 1px) 0;
+    padding: var(--pad-y) var(--pad-x) 8px;
     background: var(--surface);
-    padding-bottom: 6px;
+    border: 1px solid var(--border);
+    border-bottom: 0;
+    border-radius: var(--radius) var(--radius) 0 0;
     box-shadow: 0 1px 0 var(--border);
   }
   #group .g-head, #group .g-corner {
@@ -709,3 +717,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
     background: var(--surface);
   }
 }
+
+/* Pulsante "Esci" compatto al posto del nome */
+.signout { color: var(--muted); padding: 5px 10px; font-size: 13px; text-decoration: none; }
+.signout svg { width: 15px; height: 15px; }

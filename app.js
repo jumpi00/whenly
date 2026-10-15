@@ -64,6 +64,7 @@ const icon = path => `<svg viewBox="0 0 24 24" width="15" height="15" aria-hidde
 const CHEVRON_LEFT = icon('<path d="m15 18-6-6 6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const CHEVRON_RIGHT = icon('<path d="m9 18 6-6-6-6"/>').replace('width="15" height="15"', 'width="20" height="20"');
 const ICONS = {
+  logout: icon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>'),
   lock: icon('<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>'),
   arrowLeft: icon('<path d="M19 12H5"/><path d="m11 6-6 6 6 6"/>'),
   arrowUp: icon('<path d="M12 19V5"/><path d="m6 11 6-6 6 6"/>'),
@@ -936,7 +937,7 @@ async function renderEvent(id) {
     mine.innerHTML = `
       <div class="row-between">
         <h2>${t('yourAvailability')}</h2>
-        <span class="muted">${myPassword ? `<span title="${esc(t('protected'))}">🔒</span> ` : ''}${esc(me)} · <button class="link-btn" id="change-name">${t('logout')}</button></span>
+        <button type="button" class="btn ghost small signout" id="change-name" title="${esc(t('signedInAs', me))}">${ICONS.logout}${cap(t('logout'))}</button>
       </div>
       <p class="hint" id="paint-hint"><span class="hint-mouse">${t('paintHint')}</span><span class="hint-touch">${t('paintHintTouch')}</span> <span class="sr-only">${t('keyboardHint')}</span></p>
       <div class="day-pager" data-pager></div>
