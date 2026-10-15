@@ -69,7 +69,12 @@
 }
 
 * { box-sizing: border-box; }
-html, body { overflow-x: clip; overscroll-behavior-x: none; }
+/* Niente scorrimento orizzontale: il dito può solo scorrere in verticale (e zoomare). */
+html {
+  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
+}
+html, body { overflow-x: clip; overscroll-behavior-x: none; max-width: 100%; }
 body {
   margin: 0;
   background: var(--bg);

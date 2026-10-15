@@ -1,7 +1,7 @@
-import { store, isLocal, isConnectionError } from './store.js';
-import { LANGS, lang, setLang, t } from './i18n.js';
-import { privacyHTML } from './privacy.js';
-import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js';
+import { store, isLocal, isConnectionError } from './store.js?v=202610151509';
+import { LANGS, lang, setLang, t } from './i18n.js?v=202610151509';
+import { privacyHTML } from './privacy.js?v=202610151509';
+import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js?v=202610151509';
 
 // --- Utilità ----------------------------------------------------------------
 const $ = (sel, root = document) => root.querySelector(sel);
