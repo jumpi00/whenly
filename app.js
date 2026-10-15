@@ -29,8 +29,11 @@ function buildFormatters() {
 
 // Intervallo di date con il mese per esteso: "19–25 ottobre", "26 ottobre – 1 novembre".
 function fmtSpan(a, b) {
-  try { return F.dayLongMonth.formatRange(a, b); }
-  catch { return `${F.dayLongMonth.format(a)} – ${F.dayLongMonth.format(b)}`; }
+  let text;
+  try { text = F.dayLongMonth.formatRange(a, b); }
+  catch { text = `${F.dayLongMonth.format(a)} – ${F.dayLongMonth.format(b)}`; }
+  // Alcuni browser scrivono "08" invece di "8" negli intervalli.
+  return text.replace(/(^|[^\d])0(\d)(?!\d)/g, '$1$2');
 }
 
 function fmtDuration(min) {
@@ -684,7 +687,7 @@ async function renderEvent(id) {
       <section class="card" id="mine"></section>
       <section class="card" id="group">
         <div class="row-between">
-          <h2>${t('groupTitle')}</h2>
+          <div class="title-group"><h2>${t('groupTitle')}</h2><span class="week-of" id="week-of"></span></div>
           <div class="responders" id="responders">
             <button type="button" class="responders-btn" id="group-count" aria-haspopup="true" aria-expanded="false" aria-controls="people-pop"></button>
             <div class="responders-pop" id="people-pop">
@@ -709,8 +712,8 @@ async function renderEvent(id) {
             </button>
           </div>
         </div>
-        <div class="page-bar-wrap" data-pagebar></div>
         <div class="hover-info" id="hover-info" aria-live="polite"></div>
+        <div class="week-cards" id="week-cards"></div>
       </section>
     </div>
     </div>
@@ -731,48 +734,64 @@ async function renderEvent(id) {
     route();
   });
 
-  // Su schermi stretti i giorni si sfogliano a gruppi, così la griglia non scorre in orizzontale.
-  let pageStart = 0;
-  let perPage = dates.length;
-  function measurePerPage() {
-    const width = $('#group').clientWidth - 40;
-    // Al massimo 7 giorni per volta (una settimana); meno se lo schermo è stretto.
-    return Math.max(2, Math.min(dates.length, 7, Math.floor((width - 60) / 46)));
+  // Le griglie si sfogliano per settimane (lunedì–domenica) tra i giorni dell'evento.
+  const weekStart = d => {
+    const dt = parseDate(d);
+    dt.setDate(dt.getDate() - ((dt.getDay() + 6) % 7));
+    return isoDate(dt);
+  };
+  const weeks = [];
+  for (const d of dates) {
+    const key = weekStart(d);
+    if (!weeks.length || weeks.at(-1).key !== key) weeks.push({ key, dates: [] });
+    weeks.at(-1).dates.push(d);
   }
-  function visibleDates() {
-    pageStart = Math.max(0, Math.min(pageStart, dates.length - perPage));
-    return dates.slice(pageStart, pageStart + perPage);
-  }
+  let weekIndex = 0;
+  const visibleDates = () => weeks[weekIndex].dates;
   // Minimo di sicurezza (~12 px per ora): sugli schermi normali tutte le ore stanno nel riquadro.
   const rowMin = Math.max(3, Math.round(12 * slot / 60));
-  const gridCols = () => `grid-template-columns: 60px repeat(${visibleDates().length}, minmax(0, 1fr)); --rows: ${times.length}; --row-min: ${rowMin}px`;
-  // Barra di paginazione: un segmento cliccabile per ogni gruppo di giorni, largo
-  // in proporzione ai giorni che contiene; il segmento attuale è evidenziato.
-  function paginationHTML() {
-    const pages = Math.ceil(dates.length / perPage);
-    const current = pageStart + perPage >= dates.length ? pages - 1 : Math.floor(pageStart / perPage);
-    let html = '';
-    for (let i = 0; i < pages; i++) {
-      const from = i * perPage, to = Math.min(from + perPage, dates.length);
-      const label = fmtSpan(parseDate(dates[from]), parseDate(dates[to - 1]));
-      html += `<button type="button" class="page-seg${i === current ? ' active' : ''}" data-goto="${i}" style="flex-grow:${to - from}"
-        title="${esc(label)}" aria-label="${esc(label)}"${i === current ? ' aria-current="page"' : ''}></button>`;
-    }
-    return `<nav class="page-bar" aria-label="${esc(t('pagesLabel'))}">${html}</nav>`;
-  }
+  const gridCols = () => `grid-template-columns: var(--gutter) repeat(${visibleDates().length}, minmax(0, 1fr)); --rows: ${times.length}; --row-min: ${rowMin}px`;
 
   function renderPagers() {
     const shown = visibleDates();
-    const html = dates.length > perPage
-      ? `<button type="button" class="btn" data-page="-1" aria-label="${esc(t('prevDays'))}"${pageStart === 0 ? ' disabled' : ''}>${CHEVRON_LEFT}<span class="pager-text">${t('prevShort')}</span></button>
+    const many = weeks.length > 1;
+    const html = many
+      ? `<button type="button" class="btn" data-page="-1" aria-label="${esc(t('prevDays'))}"${weekIndex === 0 ? ' disabled' : ''}>${CHEVRON_LEFT}<span class="pager-text">${t('prevShort')}</span></button>
          <span class="pager-label">${fmtSpan(parseDate(shown[0]), parseDate(shown.at(-1)))}</span>
-         <button type="button" class="btn" data-page="1" aria-label="${esc(t('nextDays'))}"${pageStart + perPage >= dates.length ? ' disabled' : ''}><span class="pager-text">${t('nextShort')}</span>${CHEVRON_RIGHT}</button>`
+         <button type="button" class="btn" data-page="1" aria-label="${esc(t('nextDays'))}"${weekIndex === weeks.length - 1 ? ' disabled' : ''}><span class="pager-text">${t('nextShort')}</span>${CHEVRON_RIGHT}</button>`
       : '';
     app.querySelectorAll('[data-pager]').forEach(el => { el.innerHTML = html; el.hidden = !html; });
-    // Barra delle pagine sotto la griglia, come una barra di scorrimento.
-    const bar = html ? paginationHTML() : '';
-    app.querySelectorAll('[data-pagebar]').forEach(el => { el.innerHTML = bar; el.hidden = !bar; });
+    $('#week-of').textContent = many ? t('weekOf', weekIndex + 1, weeks.length) : '';
   }
+
+  // Schede settimana sotto la griglia del gruppo: per ogni settimana una mini-heatmap
+  // dei 7 giorni, il massimo di persone disponibili e il giorno migliore.
+  function renderWeekCards(byKey, included) {
+    const box = $('#week-cards');
+    if (weeks.length < 2) { box.innerHTML = ''; return; }
+    const total = included.length;
+    const dayMax = d => Math.max(0, ...times.map(m => byKey.get(L.at(d, m))?.length ?? 0));
+    box.innerHTML = weeks.map((w, i) => {
+      const monday = parseDate(w.key);
+      const cells = Array.from({ length: 7 }, (_, k) => {
+        const day = new Date(monday); day.setDate(monday.getDate() + k);
+        const iso = isoDate(day);
+        if (!w.dates.includes(iso)) return '<i class="off"></i>';
+        return `<i style="background:${total ? heat(dayMax(iso) / total) : 'var(--cell)'}"></i>`;
+      }).join('');
+      let best = 0, bestDay = null;
+      for (const d of w.dates) { const n = dayMax(d); if (n > best) { best = n; bestDay = d; } }
+      const range = fmtSpan(parseDate(w.dates[0]), parseDate(w.dates.at(-1)));
+      return `<button type="button" class="week-card" data-goto-week="${i}" aria-current="${i === weekIndex}" aria-label="${esc(`${t('weekShort', i + 1)} · ${range}`)}">
+        <span class="wc-top"><b>${t('weekShort', i + 1)}</b>${total ? `<span>${best}/${total} max</span>` : ''}</span>
+        <span class="wc-range">${range}</span>
+        <span class="wc-mini">${cells}</span>
+        <span class="wc-best">${bestDay ? `${t('bestDayLabel')} <b>${F.weekday.format(parseDate(bestDay))} ${parseDate(bestDay).getDate()}</b>` : t('noAvailShort')}</span>
+      </button>`;
+    }).join('');
+    box.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+
   function redrawGrids() {
     if (me) renderMine();
     drawGroupGrid();
@@ -782,18 +801,14 @@ async function renderEvent(id) {
   }
   function onPage(e) {
     const step = e.target.closest('[data-page]');
-    const go = e.target.closest('[data-goto]');
-    if (step) pageStart += +step.dataset.page * perPage;
-    else if (go) pageStart = +go.dataset.goto * perPage;
+    const go = e.target.closest('[data-goto-week]');
+    if (step) weekIndex = Math.max(0, Math.min(weeks.length - 1, weekIndex + +step.dataset.page));
+    else if (go) weekIndex = +go.dataset.gotoWeek;
     else return;
     redrawGrids();
   }
   app.addEventListener('click', onPage);
-  function onResize() {
-    const next = measurePerPage();
-    if (next !== perPage) { perPage = next; redrawGrids(); }
-    thinAllLabels();
-  }
+  function onResize() { thinAllLabels(); }
   addEventListener('resize', onResize);
 
   // kind: 'mine' (caselle selezionabili) oppure 'group' (sola lettura con dettaglio).
@@ -803,7 +818,7 @@ async function renderEvent(id) {
     let h = `<div class="g-corner"></div>`;
     dates.forEach(d => {
       const dt = parseDate(d);
-      h += `<div class="g-head"><span>${F.weekday.format(dt)}</span><b>${F.dayMonth.format(dt)}</b></div>`;
+      h += `<div class="g-head"><span>${F.weekday.format(dt)}</span><b class="g-day-full">${F.dayMonth.format(dt)}</b><b class="g-day-short">${dt.getDate()}</b></div>`;
     });
     times.forEach((m, r) => {
       // Stacco visivo quando le righe non sono consecutive (es. dopo mezzanotte in un altro fuso).
@@ -902,7 +917,6 @@ async function renderEvent(id) {
       <p class="hint" id="paint-hint">${t('paintHint')} <span class="sr-only">${t('keyboardHint')}</span></p>
       <div class="day-pager" data-pager></div>
       <div class="grid-wrap"><div class="grid paint" id="my-grid" role="group" aria-label="${esc(t('yourAvailability'))}" aria-describedby="paint-hint" style="${gridCols()}">${gridHTML('mine')}</div></div>
-      <div class="page-bar-wrap" data-pagebar></div>
       <p class="status" id="save-status" role="status"></p>`;
     const grid = $('#my-grid');
     const paint = () => grid.querySelectorAll('[data-k]').forEach(el => {
@@ -1009,7 +1023,7 @@ async function renderEvent(id) {
     // La heatmap resta visibile (sbiadita); dettagli, nomi e filtri restano bloccati.
     $('#group').classList.toggle('locked', !me);
     $('#lock-overlay').hidden = !!me;
-    [groupGrid, $('#responders'), $('#legend'), ...$('#group').querySelectorAll('[data-pager], [data-pagebar]')]
+    [groupGrid, $('#responders'), $('#legend'), $('#week-cards'), ...$('#group').querySelectorAll('[data-pager]')]
       .forEach(el => el.toggleAttribute('inert', !me));
 
     // "N risposte" apre l'elenco di chi ha risposto (al passaggio del mouse o al tocco).
@@ -1036,6 +1050,7 @@ async function renderEvent(id) {
     });
     showHover(hoverKey, byKey, included);
     renderBest(byKey, included);
+    renderWeekCards(byKey, included);
   }
 
   function heat(ratio) {
@@ -1353,7 +1368,6 @@ async function renderEvent(id) {
     removeEventListener('resize', updateHint);
   } };
 
-  perPage = measurePerPage();
   renderHeadExtras();
   renderMine();
   drawGroupGrid();

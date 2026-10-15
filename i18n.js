@@ -3,6 +3,10 @@ export const LANGS = { it: 'Italiano', en: 'English', es: 'Español', fr: 'Fran�
 
 const dict = {
   it: {
+    weekOf: (n, m) => `Settimana ${n} di ${m}`,
+    weekShort: n => `Sett. ${n}`,
+    bestDayLabel: "Migliore:",
+    noAvailShort: "Nessuna disponibilità",
     prevShort: "Precedenti",
     nextShort: "Successive",
     startAt: "Inizio",
@@ -123,6 +127,10 @@ const dict = {
     missing: names => `Manca: ${names}`,
   },
   en: {
+    weekOf: (n, m) => `Week ${n} of ${m}`,
+    weekShort: n => `Week ${n}`,
+    bestDayLabel: "Best:",
+    noAvailShort: "No availability",
     prevShort: "Prev",
     nextShort: "Next",
     startAt: "Start",
@@ -243,6 +251,10 @@ const dict = {
     missing: names => `Missing: ${names}`,
   },
   es: {
+    weekOf: (n, m) => `Semana ${n} de ${m}`,
+    weekShort: n => `Sem. ${n}`,
+    bestDayLabel: "Mejor:",
+    noAvailShort: "Sin disponibilidad",
     prevShort: "Anteriores",
     nextShort: "Siguientes",
     startAt: "Inicio",
@@ -363,6 +375,10 @@ const dict = {
     missing: names => `Falta: ${names}`,
   },
   fr: {
+    weekOf: (n, m) => `Semaine ${n} sur ${m}`,
+    weekShort: n => `Sem. ${n}`,
+    bestDayLabel: "Meilleur :",
+    noAvailShort: "Aucune disponibilité",
     prevShort: "Précédents",
     nextShort: "Suivants",
     startAt: "Début",
@@ -483,6 +499,10 @@ const dict = {
     missing: names => `Manque : ${names}`,
   },
   de: {
+    weekOf: (n, m) => `Woche ${n} von ${m}`,
+    weekShort: n => `Woche ${n}`,
+    bestDayLabel: "Beste:",
+    noAvailShort: "Keine Verfügbarkeit",
     prevShort: "Zurück",
     nextShort: "Weiter",
     startAt: "Beginn",
