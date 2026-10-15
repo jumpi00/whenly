@@ -4,7 +4,7 @@ export const LANGS = { it: 'Italiano', en: 'English', es: 'Espa√±ol', fr: 'Fran√
 const dict = {
   it: {
     prevShort: "Precedenti",
-    nextShort: "Successivi",
+    nextShort: "Successive",
     startAt: "Inizio",
     duration: "Durata",
     confirmTime: "Conferma orario",
