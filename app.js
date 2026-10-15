@@ -1,7 +1,7 @@
-import { store, isLocal, isConnectionError } from './store.js?v=202610151519';
-import { LANGS, lang, setLang, t } from './i18n.js?v=202610151519';
-import { privacyHTML } from './privacy.js?v=202610151519';
-import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js?v=202610151519';
+import { store, isLocal, isConnectionError } from './store.js?v=202610151522';
+import { LANGS, lang, setLang, t } from './i18n.js?v=202610151522';
+import { privacyHTML } from './privacy.js?v=202610151522';
+import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js?v=202610151522';
 
 // --- Utilità ----------------------------------------------------------------
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -730,7 +730,7 @@ async function renderEvent(id) {
     <div class="event-cols">
       <section class="card" id="mine"></section>
       <section class="card" id="group">
-        <div class="group-sticky" id="group-sticky">
+        <div class="card-sticky" id="group-sticky">
         <div class="row-between">
           <div class="title-group"><h2>${t('groupTitle')}</h2><span class="week-of" id="week-of"></span></div>
           <div class="responders" id="responders">
@@ -813,8 +813,10 @@ async function renderEvent(id) {
   // Su telefono la testata del gruppo resta fissa in alto: la riga dei giorni
   // si ferma subito sotto, quindi serve sapere quanto è alta.
   function updateStickyOffset() {
-    const head = $('#group-sticky');
-    if (head) $('#group').style.setProperty('--sticky-h', `${head.offsetHeight}px`);
+    for (const [card, head] of [['#group', '#group-sticky'], ['#mine', '#mine-sticky']]) {
+      const el = $(head);
+      if (el) $(card).style.setProperty('--sticky-h', `${el.offsetHeight}px`);
+    }
   }
 
   function redrawGrids() {
@@ -935,12 +937,14 @@ async function renderEvent(id) {
       return;
     }
     mine.innerHTML = `
+      <div class="card-sticky" id="mine-sticky">
       <div class="row-between">
         <h2>${t('yourAvailability')}</h2>
         <button type="button" class="btn ghost small signout" id="change-name" title="${esc(t('signedInAs', me))}${myPassword ? ` · ${esc(t('protected'))}` : ''}">${myPassword ? `<span class="signout-lock" aria-label="${esc(t('protected'))}">${ICONS.lock}</span>` : ''}${ICONS.logout}${cap(t('logout'))}</button>
       </div>
-      <p class="hint" id="paint-hint"><span class="hint-mouse">${t('paintHint')}</span><span class="hint-touch">${t('paintHintTouch')}</span> <span class="sr-only">${t('keyboardHint')}</span></p>
       <div class="day-pager" data-pager></div>
+      </div>
+      <p class="hint" id="paint-hint"><span class="hint-mouse">${t('paintHint')}</span><span class="hint-touch">${t('paintHintTouch')}</span> <span class="sr-only">${t('keyboardHint')}</span></p>
       <div class="grid-wrap"><div class="grid paint" id="my-grid" role="group" aria-label="${esc(t('yourAvailability'))}" aria-describedby="paint-hint" style="${gridCols()}">${gridHTML('mine')}</div></div>
       <p class="status" id="save-status" role="status"></p>`;
     const grid = $('#my-grid');
@@ -966,6 +970,7 @@ async function renderEvent(id) {
         scheduleSave();
       },
     });
+    renderPagers();
     $('#change-name').addEventListener('click', () => {
       me = '';
       myPassword = '';
