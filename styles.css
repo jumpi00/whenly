@@ -99,7 +99,7 @@ textarea { resize: vertical; min-height: 64px; }
 .topbar { max-width: 1180px; margin: 0 auto; padding: 18px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .lang-pick select { width: auto; padding: 7px 38px 7px 12px; font-size: 14px; background-position: right 10px center; }
-.topbar-right { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.topbar-right { display: flex; align-items: center; gap: 8px; min-width: 0; flex-shrink: 1; }
 .topbar-actions { display: flex; align-items: center; gap: 4px; }
 .topbar-actions:empty { display: none; }
 .topbar-actions .btn { padding: 7px 12px; font-size: 14px; text-decoration: none; }
@@ -115,7 +115,7 @@ textarea { resize: vertical; min-height: 64px; }
   .lang-pick select { padding-right: 32px; padding-left: 10px; background-position: right 8px center; }
 }
 
-.brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; text-decoration: none; }
+.brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; text-decoration: none; flex-shrink: 0; }
 .brand-mark {
   width: 18px; height: 18px; border-radius: 5px;
   background:
@@ -726,3 +726,16 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
 /* Pulsante "Esci" compatto al posto del nome */
 .signout { color: var(--muted); padding: 5px 10px; font-size: 13px; text-decoration: none; }
 .signout svg { width: 15px; height: 15px; }
+.signout-lock { display: inline-flex; color: var(--accent-text); }
+.signout { gap: 5px; }
+
+/* Protezioni contro elementi più larghi dello schermo (in particolare su iPhone) */
+main, .card, .field, .field-row > * { min-width: 0; }
+select, input, textarea { max-width: 100%; }
+h1, h2, .meta, .event-desc { overflow-wrap: anywhere; }
+@media (max-width: 520px) {
+  .topbar { gap: 8px; padding-inline: 16px; }
+  .lang-pick { min-width: 0; }
+  .lang-pick select { max-width: 120px; text-overflow: ellipsis; }
+  .field-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}

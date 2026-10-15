@@ -1,7 +1,7 @@
-import { store, isLocal, isConnectionError } from './store.js?v=202610151509';
-import { LANGS, lang, setLang, t } from './i18n.js?v=202610151509';
-import { privacyHTML } from './privacy.js?v=202610151509';
-import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js?v=202610151509';
+import { store, isLocal, isConnectionError } from './store.js?v=202610151514';
+import { LANGS, lang, setLang, t } from './i18n.js?v=202610151514';
+import { privacyHTML } from './privacy.js?v=202610151514';
+import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js?v=202610151514';
 
 // --- Utilità ----------------------------------------------------------------
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -937,7 +937,7 @@ async function renderEvent(id) {
     mine.innerHTML = `
       <div class="row-between">
         <h2>${t('yourAvailability')}</h2>
-        <button type="button" class="btn ghost small signout" id="change-name" title="${esc(t('signedInAs', me))}">${ICONS.logout}${cap(t('logout'))}</button>
+        <button type="button" class="btn ghost small signout" id="change-name" title="${esc(t('signedInAs', me))}${myPassword ? ` · ${esc(t('protected'))}` : ''}">${myPassword ? `<span class="signout-lock" aria-label="${esc(t('protected'))}">${ICONS.lock}</span>` : ''}${ICONS.logout}${cap(t('logout'))}</button>
       </div>
       <p class="hint" id="paint-hint"><span class="hint-mouse">${t('paintHint')}</span><span class="hint-touch">${t('paintHintTouch')}</span> <span class="sr-only">${t('keyboardHint')}</span></p>
       <div class="day-pager" data-pager></div>
