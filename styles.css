@@ -69,12 +69,10 @@
 }
 
 * { box-sizing: border-box; }
-/* Niente scorrimento orizzontale: il dito può solo scorrere in verticale (e zoomare). */
-html {
-  touch-action: pan-y;
-  touch-action: pan-y pinch-zoom;
-}
+/* La pagina non può diventare più larga dello schermo (niente scroll orizzontale),
+   ma lo zoom con due dita e lo spostamento restano liberi. */
 html, body { overflow-x: clip; overscroll-behavior-x: none; max-width: 100%; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   margin: 0;
   background: var(--bg);
@@ -736,3 +734,11 @@ h1, h2, .meta, .event-desc { overflow-wrap: anywhere; }
   .lang-pick select { max-width: 120px; text-overflow: ellipsis; }
   .field-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }
+
+/* Safari su iPhone fa zoom automatico sui campi con testo sotto i 16 px: su
+   telefono e tablet i campi usano 16 px, così la pagina non si ingrandisce. */
+@media (max-width: 1023px), (hover: none) {
+  input, select, textarea, .lang-pick select, .tz-pick select, .confirm-editor select, #min-dur { font-size: 16px; }
+}
+/* La prima etichetta oraria non va sotto la riga dei giorni */
+.g-time.first-label { transform: none; }

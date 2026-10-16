@@ -1,7 +1,7 @@
-import { store, isLocal, isConnectionError } from './store.js?v=202610151522';
-import { LANGS, lang, setLang, t } from './i18n.js?v=202610151522';
-import { privacyHTML } from './privacy.js?v=202610151522';
-import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js?v=202610151522';
+import { store, isLocal, isConnectionError } from './store.js?v=202610161854';
+import { LANGS, lang, setLang, t } from './i18n.js?v=202610161854';
+import { privacyHTML } from './privacy.js?v=202610161854';
+import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js?v=202610161854';
 
 // --- Utilità ----------------------------------------------------------------
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -854,7 +854,7 @@ async function renderEvent(id) {
       // Con intervalli che non dividono l'ora (45 min, 1 h 30, 2 h) ogni riga ha la sua etichetta.
       const onHour = afterGap || 60 % slot !== 0 || (m - times[0]) % 60 === 0;
       const gap = afterGap ? ' gap' : '';
-      h += `<div class="g-time${gap}"${onHour ? ` data-i="${labelIndex++}"` : ''}>${onHour ? hhmm(m) : ''}</div>`;
+      h += `<div class="g-time${gap}${r === 0 ? ' first-label' : ''}"${onHour ? ` data-i="${labelIndex++}"` : ''}>${onHour ? hhmm(m) : ''}</div>`;
       dates.forEach((d, c) => {
         const key = L.at(d, m);
         if (!key) { h += `<div class="g-empty${gap}"></div>`; return; }
