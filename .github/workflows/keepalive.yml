@@ -1,25 +1,51 @@
 # Tiene attivo il progetto Supabase (il piano gratuito va in pausa dopo ~7 giorni
-# senza utilizzo). Ogni 3 giorni fa una lettura leggera dal database.
-# Se fallisce (es. progetto già in pausa), GitHub ti avvisa via email.
+# senza utilizzo). Due volte al giorno fa una scrittura vera nel database
+# (funzione keepalive, sql/006) più alcune letture, con tentativi ripetuti.
+# Si riattiva anche da solo, così GitHub non lo disattiva dopo 60 giorni
+# senza commit. Se fallisce, GitHub ti avvisa via email.
 name: Keep Supabase awake
 
 on:
   schedule:
-    - cron: "17 8 */3 * *"
+    - cron: "23 6 * * *"
+    - cron: "47 18 * * *"
   workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Read one event id
+      - name: Write + read on Supabase
         env:
           # Chiave pubblica (la stessa di config.js), non un segreto.
           SUPABASE_URL: https://uwkwhuxhsqtyeqejqapv.supabase.co
           SUPABASE_KEY: sb_publishable_Iu5sGXn2BwxZWjse-sJ8Yw_ZoovbbQh
         run: |
-          status=$(curl -s -o /dev/null -w "%{http_code}" \
-            "$SUPABASE_URL/rest/v1/events?select=id&limit=1" \
-            -H "apikey: $SUPABASE_KEY")
-          echo "Supabase ha risposto: $status"
-          test "$status" = "200"
+          req() {
+            for i in 1 2 3 4 5; do
+              code=$(curl -s -o /tmp/out -w "%{http_code}" -m 30 "$@" \
+                -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY")
+              [ "$code" = "200" ] || [ "$code" = "404" ] && break
+              echo "tentativo $i: $code, riprovo tra 30s"; sleep 30
+            done
+            echo "$code"
+          }
+          w=$(req -X POST "$SUPABASE_URL/rest/v1/rpc/keepalive" -H "Content-Type: application/json" -d '{}')
+          echo "Scrittura keepalive: $w $(cat /tmp/out)"
+          r=$(req "$SUPABASE_URL/rest/v1/events?select=id&limit=1")
+          echo "Lettura eventi: $r"
+          h=$(req "$SUPABASE_URL/auth/v1/health")
+          echo "Auth health: $h"
+          [ "$w" = "404" ] && echo "::warning::Funzione keepalive mancante: esegui sql/006-keepalive.sql"
+          test "$w" = "200" || test "$r" = "200"
+
+      - name: Re-enable this workflow (evita lo stop dopo 60 giorni)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/keepalive.yml/enable" || true
