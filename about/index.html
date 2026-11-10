@@ -150,6 +150,33 @@
     footer a { color: var(--muted); }
     @media (max-width: 600px) { footer .wrap { justify-content: center; text-align: center; } }
 
+
+    /* Feedback dialog */
+    button.btn { cursor: pointer; }
+    .fb { width: min(480px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--border); border-radius: 18px;
+      background: var(--surface); color: var(--text); box-shadow: 0 30px 80px -20px rgba(0,0,0,.45); }
+    .fb::backdrop { background: rgba(10, 11, 12, .55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+    .fb form { padding: 26px; display: grid; gap: 14px; }
+    .fb-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+    .fb h2 { font-size: 24px; margin: 0; }
+    .fb p { margin: 0; color: var(--muted); font-size: 15px; }
+    .fb-x { border: 0; background: none; color: var(--muted); font-size: 26px; line-height: 1; width: 36px; height: 36px;
+      border-radius: 8px; cursor: pointer; flex: none; }
+    .fb-x:hover { background: var(--cell); color: var(--text); }
+    .fb label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+    .fb label small { font-weight: 400; color: var(--muted); }
+    .fb input, .fb textarea { font: 400 16px/1.4 var(--font); color: var(--text); background: var(--bg);
+      border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; width: 100%; }
+    .fb textarea { min-height: 120px; resize: vertical; }
+    .fb input:focus, .fb textarea:focus { outline: 2px solid var(--accent-text); outline-offset: 0; border-color: transparent; }
+    .fb .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .fb-row { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
+    .fb-status { font-size: 14px; min-height: 1.4em; }
+    .fb-status.err { color: #c43d3d; }
+    .fb [hidden] { display: none; }
+    .fb-done { padding: 40px 26px; text-align: center; display: grid; gap: 10px; justify-items: center; }
+    .fb-done .ico { width: 52px; height: 52px; margin: 0; }
+
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
   </style>
 </head>
@@ -312,7 +339,7 @@
           <p>Your next meeting is one link away. It takes less than a minute to set up, and it's free.</p>
           <div class="cta">
             <a class="btn btn-primary" href="../">Create your first event →</a>
-            <a class="btn btn-ghost" href="mailto:hello@giampaolozirone.com?subject=Whenly%20-%20">Get in touch</a>
+            <button type="button" class="btn btn-ghost" data-feedback>Leave feedback</button>
           </div>
         </div>
       </div>
@@ -322,9 +349,43 @@
   <footer>
     <div class="wrap">
       <span>©2026 Giampaolo Zirone · <a href="mailto:hello@giampaolozirone.com?subject=Whenly%20-%20">Contact me</a></span>
-      <span><a href="../">Open Whenly</a> · <a href="../#/privacy">Privacy</a></span>
+      <span><a href="#" data-feedback>Feedback</a> · <a href="../">Open Whenly</a> · <a href="../#/privacy">Privacy</a></span>
     </div>
   </footer>
+
+  <dialog class="fb" id="fb" aria-labelledby="fb-title">
+    <form id="fb-form" action="https://formspree.io/f/mrpqzgbv" method="POST" novalidate>
+      <div class="fb-head">
+        <div>
+          <h2 id="fb-title">Share your feedback</h2>
+          <p>Ideas, bugs, things you love or hate. Every message is read.</p>
+        </div>
+        <button type="button" class="fb-x" data-close aria-label="Close">×</button>
+      </div>
+      <label><span>Message</span>
+        <textarea name="message" required placeholder="What would make Whenly better for you?"></textarea>
+      </label>
+      <label><span>Name <small>(optional)</small></span>
+        <input name="name" autocomplete="name">
+      </label>
+      <label><span>Email <small>(optional, if you'd like a reply)</small></span>
+        <input name="email" type="email" autocomplete="email">
+      </label>
+      <input type="hidden" name="_subject" value="Whenly – feedback">
+      <div class="hp" aria-hidden="true"><input name="_gotcha" tabindex="-1" autocomplete="off"></div>
+      <div class="fb-status" id="fb-status" role="status"></div>
+      <div class="fb-row">
+        <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="fb-send">Send feedback</button>
+      </div>
+    </form>
+    <div class="fb-done" id="fb-done" hidden>
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></div>
+      <h2>Thanks, got it!</h2>
+      <p>Your feedback is on its way. I really appreciate you taking the time.</p>
+      <button type="button" class="btn btn-ghost" data-close style="margin-top:8px">Close</button>
+    </div>
+  </dialog>
 
   <script>
     // Demo grid: 5 days × 9 to 17, half-hour slots, with four fictional people.
@@ -371,6 +432,37 @@
     grid.addEventListener('pointerover', e => e.target.classList.contains('cell') && show(e.target));
     grid.addEventListener('focusin', e => e.target.classList.contains('cell') && show(e.target));
     grid.addEventListener('click', e => e.target.classList.contains('cell') && show(e.target));
+
+    // Feedback dialog (Formspree)
+    const fb = document.getElementById('fb');
+    const fbForm = document.getElementById('fb-form');
+    const fbStatus = document.getElementById('fb-status');
+    const fbSend = document.getElementById('fb-send');
+    const fbDone = document.getElementById('fb-done');
+    document.querySelectorAll('[data-feedback]').forEach(b => b.addEventListener('click', e => {
+      e.preventDefault();
+      fbForm.hidden = false; fbDone.hidden = true; fbStatus.textContent = ''; fbStatus.className = 'fb-status';
+      fb.showModal();
+      fbForm.message.focus();
+    }));
+    fb.addEventListener('click', e => { if (e.target === fb || e.target.closest('[data-close]')) fb.close(); });
+    fbForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const err = msg => { fbStatus.textContent = msg; fbStatus.className = 'fb-status err'; };
+      if (!fbForm.message.value.trim()) { err('Please write a message first.'); fbForm.message.focus(); return; }
+      if (fbForm.email.value && !fbForm.email.checkValidity()) { err("That email address doesn't look right."); fbForm.email.focus(); return; }
+      fbSend.disabled = true; fbSend.textContent = 'Sending…'; fbStatus.textContent = ''; fbStatus.className = 'fb-status';
+      try {
+        const res = await fetch(fbForm.action, { method: 'POST', body: new FormData(fbForm), headers: { Accept: 'application/json' } });
+        if (!res.ok) throw new Error(res.status);
+        fbForm.reset(); fbForm.hidden = true; fbDone.hidden = false;
+        fbDone.querySelector('button').focus();
+      } catch {
+        err('Something went wrong. Please try again, or email hello@giampaolozirone.com.');
+      } finally {
+        fbSend.disabled = false; fbSend.textContent = 'Send feedback';
+      }
+    });
   </script>
 </body>
 </html>
