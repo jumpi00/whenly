@@ -1,7 +1,7 @@
-import { store, isLocal, isConnectionError } from './store.js?v=202610161854';
-import { LANGS, lang, setLang, t } from './i18n.js?v=202610161854';
-import { privacyHTML } from './privacy.js?v=202610161854';
-import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js?v=202610161854';
+import { store, isLocal, isConnectionError } from './store.js?v=202611191200';
+import { LANGS, lang, setLang, t } from './i18n.js?v=202611191200';
+import { privacyHTML } from './privacy.js?v=202611191200';
+import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js?v=202611191200';
 
 // --- Utilità ----------------------------------------------------------------
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -376,6 +376,19 @@ function renderChrome() {
     .map(([code, label]) => `<option value="${code}"${code === lang ? ' selected' : ''}>${label}</option>`).join('');
   $('#footer-note').innerHTML = isLocal ? t('localMode') : '';
   $('#privacy-link').textContent = t('privacy');
+  $('#feedback-link').textContent = t('feedback');
+  $('#fb-title').textContent = t('fbTitle');
+  $('#fb-intro').textContent = t('fbIntro');
+  $('#fb-l-msg').textContent = t('fbMessage');
+  $('#fb-l-name').innerHTML = `${t('fbName')} <small>${t('fbOptional')}</small>`;
+  $('#fb-l-email').innerHTML = `${t('fbEmail')} <small>${t('fbOptionalReply')}</small>`;
+  $('#fb-form').message.placeholder = t('fbMessagePh');
+  $('#fb-cancel').textContent = t('cancel');
+  $('#fb-send').textContent = t('fbSend');
+  $('#fb-thanks').textContent = t('fbThanks');
+  $('#fb-thanks-text').textContent = t('fbThanksText');
+  $('#fb-close').textContent = t('fbClose');
+  $('#fb').querySelector('.fb-x').setAttribute('aria-label', t('fbClose'));
   const theme = prefs.get('theme', 'auto');
   const labels = { auto: t('themeAuto'), light: t('themeLight'), dark: t('themeDark') };
   $('#theme-switch').setAttribute('aria-label', t('theme'));
@@ -394,6 +407,50 @@ $('#theme-switch').addEventListener('click', e => {
   else document.documentElement.dataset.theme = theme;
   renderChrome();
 });
+
+// --- Feedback (Formspree) --------------------------------------------------
+{
+  const fb = $('#fb');
+  const form = $('#fb-form');
+  const status = $('#fb-status');
+  const send = $('#fb-send');
+  const done = $('#fb-done');
+  const setStatus = (msg = '', err = false) => { status.textContent = msg; status.classList.toggle('err', err); };
+  $('#feedback-link').addEventListener('click', e => {
+    e.preventDefault();
+    form.hidden = false;
+    done.hidden = true;
+    setStatus();
+    // Pagina da cui arriva il feedback, senza la chiave admin.
+    $('#fb-page').value = location.hash.replace(/\/admin\/.*/, '') || '#/';
+    fb.showModal();
+    form.message.focus();
+  });
+  fb.addEventListener('click', e => {
+    if (e.target === fb || e.target.closest('[data-close]')) fb.close();
+  });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!form.message.value.trim()) { setStatus(t('fbErrEmpty'), true); form.message.focus(); return; }
+    if (form.email.value && !form.email.checkValidity()) { setStatus(t('errEmail'), true); form.email.focus(); return; }
+    send.disabled = true;
+    send.textContent = t('fbSending');
+    setStatus();
+    try {
+      const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error(res.status);
+      form.reset();
+      form.hidden = true;
+      done.hidden = false;
+      $('#fb-close').focus();
+    } catch {
+      setStatus(t('fbErrSend'), true);
+    } finally {
+      send.disabled = false;
+      send.textContent = t('fbSend');
+    }
+  });
+}
 
 async function route() {
   cleanup();

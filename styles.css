@@ -742,3 +742,24 @@ h1, h2, .meta, .event-desc { overflow-wrap: anywhere; }
 }
 /* La prima etichetta oraria non va sotto la riga dei giorni */
 .g-time.first-label { transform: none; }
+
+/* Feedback (footer → Formspree) */
+.fb-dialog { width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--border);
+  border-radius: 16px; background: var(--surface); color: var(--text); box-shadow: 0 30px 80px -20px rgba(0,0,0,.45); }
+.fb-dialog::backdrop { background: rgba(10, 11, 12, .55); }
+.fb-dialog form { padding: 22px; display: grid; gap: 14px; }
+.fb-dialog [hidden] { display: none; }
+.fb-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.fb-dialog h2 { font-size: 20px; margin: 0 0 4px; }
+.fb-dialog p { margin: 0; font-size: 14px; }
+.fb-dialog .field small { font-weight: 400; color: var(--muted); }
+.fb-dialog textarea { min-height: 110px; }
+.fb-x { flex: none; width: 36px; height: 36px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-size: 24px; line-height: 1; cursor: pointer; }
+.fb-x:hover { background: var(--cell); color: var(--text); }
+.fb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.fb-status { font-size: 13px; min-height: 1.3em; margin-top: -4px; }
+.fb-status.err { color: var(--danger-text); }
+.fb-row { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.fb-done { padding: 36px 22px; display: grid; gap: 8px; justify-items: center; text-align: center; }
+.fb-check { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.fb-done .btn { margin-top: 8px; }

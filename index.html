@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=202610161854">
+  <link rel="stylesheet" href="styles.css?v=202611191200">
   <script>
     try {
       const theme = localStorage.getItem('quando:theme');
@@ -45,7 +45,7 @@
   <footer class="container footer">
     <p class="footer-note" id="footer-note"></p>
     <div class="footer-row">
-      <span>©2026 Giampaolo Zirone · <a href="mailto:hello@giampaolozirone.com?subject=Whenly%20-%20">Contact me</a> · <a href="#/privacy" id="privacy-link">Privacy</a></span>
+      <span>©2026 Giampaolo Zirone · <a href="mailto:hello@giampaolozirone.com?subject=Whenly%20-%20">Contact me</a> · <a href="#/privacy" id="privacy-link">Privacy</a> · <a href="#" id="feedback-link">Feedback</a></span>
       <div class="theme-switch" id="theme-switch" role="group">
         <button type="button" data-theme-set="auto"></button>
         <button type="button" data-theme-set="light"></button>
@@ -53,6 +53,34 @@
       </div>
     </div>
   </footer>
-  <script type="module" src="app.js?v=202610161854"></script>
+  <dialog class="fb-dialog" id="fb" aria-labelledby="fb-title">
+    <form id="fb-form" action="https://formspree.io/f/mrpqzgbv" method="POST" novalidate>
+      <div class="fb-head">
+        <div>
+          <h2 id="fb-title"></h2>
+          <p class="muted" id="fb-intro"></p>
+        </div>
+        <button type="button" class="fb-x" data-close>×</button>
+      </div>
+      <label class="field"><span id="fb-l-msg"></span><textarea name="message" rows="5"></textarea></label>
+      <label class="field"><span id="fb-l-name"></span><input type="text" name="name" autocomplete="name"></label>
+      <label class="field"><span id="fb-l-email"></span><input type="email" name="email" autocomplete="email"></label>
+      <input type="hidden" name="_subject" value="Whenly – feedback">
+      <input type="hidden" name="page" id="fb-page">
+      <div class="fb-hp" aria-hidden="true"><input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></div>
+      <div class="fb-status" id="fb-status" role="status"></div>
+      <div class="fb-row">
+        <button type="button" class="btn" data-close id="fb-cancel"></button>
+        <button type="submit" class="btn primary" id="fb-send"></button>
+      </div>
+    </form>
+    <div class="fb-done" id="fb-done" hidden>
+      <div class="fb-check" aria-hidden="true">✓</div>
+      <h2 id="fb-thanks"></h2>
+      <p class="muted" id="fb-thanks-text"></p>
+      <button type="button" class="btn" data-close id="fb-close"></button>
+    </div>
+  </dialog>
+  <script type="module" src="app.js?v=202611191200"></script>
 </body>
 </html>

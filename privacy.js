@@ -31,6 +31,7 @@ const TEXT = {
       <li><b>Supabase</b> — database in cui sono salvati eventi e risposte.</li>
       <li><b>GitHub Pages</b> — ospita il sito; può registrare l'indirizzo IP per motivi di sicurezza.</li>
       <li><b>Google Fonts</b> e <b>jsDelivr</b> — forniscono il font e una libreria del sito; ricevono l'indirizzo IP del browser.</li>
+      <li><b>Formspree</b> — riceve i messaggi inviati con il modulo Feedback (testo ed eventuali nome ed email) e li inoltra al titolare.</li>
     </ul>
     <p>Alcuni fornitori possono trattare dati fuori dall'Unione Europea, con le garanzie previste dal GDPR.</p>
 
@@ -65,6 +66,7 @@ const TEXT = {
       <li><b>Supabase</b> — database storing events and responses.</li>
       <li><b>GitHub Pages</b> — hosts the website; may log IP addresses for security.</li>
       <li><b>Google Fonts</b> and <b>jsDelivr</b> — serve the font and a library used by the site; they receive your browser's IP address.</li>
+      <li><b>Formspree</b> — receives messages sent through the Feedback form (the text and, if given, name and email) and forwards them to the owner.</li>
     </ul>
     <p>Some providers may process data outside the European Union, with the safeguards required by the GDPR.</p>
 
