@@ -1,7 +1,7 @@
-import { store, isLocal, isConnectionError } from './store.js?v=202611191200';
-import { LANGS, lang, setLang, t } from './i18n.js?v=202611191200';
-import { privacyHTML } from './privacy.js?v=202611191200';
-import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js?v=202611191200';
+import { store, isLocal, isConnectionError } from './store.js?v=202611251300';
+import { LANGS, lang, setLang, t } from './i18n.js?v=202611251300';
+import { privacyHTML } from './privacy.js?v=202611251300';
+import { deviceTz, timeZoneOptions, tzName, utcToZoned, zonedToUtc } from './tz.js?v=202611251300';
 
 // --- Utilità ----------------------------------------------------------------
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -333,19 +333,33 @@ function finalRange(ev) {
 const icsStamp = ms => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 const icsText = s => String(s).replace(/\\/g, '\\\\').replace(/[;,]/g, m => `\\${m}`).replace(/\r?\n/g, '\\n');
 
+// Evento "solo giorni": una casella per giorno, senza orari né fusi.
+const isDaysOnly = ev => ev.slot_minutes >= 1440;
+
 function calendarLinks(ev) {
   const { start, end } = finalRange(ev);
   const details = [ev.description, eventLink(ev.id)].filter(Boolean).join('\n\n');
   const enc = encodeURIComponent;
-  const google = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${enc(ev.title)}&dates=${icsStamp(start)}/${icsStamp(end)}&details=${enc(details)}`;
-  const outlook = `https://outlook.office.com/calendar/action/compose?subject=${enc(ev.title)}&startdt=${enc(new Date(start).toISOString())}&enddt=${enc(new Date(end).toISOString())}&body=${enc(details)}`;
+  // Giorno intero: date senza ora (fine = giorno dopo, esclusa).
+  const day = ev.final.start.slice(0, 10);
+  const next = parseDate(day);
+  next.setDate(next.getDate() + 1);
+  const allDay = isDaysOnly(ev);
+  const d8 = iso => iso.replace(/-/g, '');
+  const google = allDay
+    ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${enc(ev.title)}&dates=${d8(day)}/${d8(isoDate(next))}&details=${enc(details)}`
+    : `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${enc(ev.title)}&dates=${icsStamp(start)}/${icsStamp(end)}&details=${enc(details)}`;
+  const outlook = allDay
+    ? `https://outlook.office.com/calendar/action/compose?subject=${enc(ev.title)}&startdt=${day}&enddt=${isoDate(next)}&allday=true&body=${enc(details)}`
+    : `https://outlook.office.com/calendar/action/compose?subject=${enc(ev.title)}&startdt=${enc(new Date(start).toISOString())}&enddt=${enc(new Date(end).toISOString())}&body=${enc(details)}`;
   const ics = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Whenly//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
     'BEGIN:VEVENT',
     `UID:${ev.id}-${icsStamp(start)}@whenly`,
     `DTSTAMP:${icsStamp(Date.now())}`,
-    `DTSTART:${icsStamp(start)}`,
-    `DTEND:${icsStamp(end)}`,
+    ...(allDay
+      ? [`DTSTART;VALUE=DATE:${d8(day)}`, `DTEND;VALUE=DATE:${d8(isoDate(next))}`]
+      : [`DTSTART:${icsStamp(start)}`, `DTEND:${icsStamp(end)}`]),
     `SUMMARY:${icsText(ev.title)}`,
     `DESCRIPTION:${icsText(details)}`,
     `URL:${eventLink(ev.id)}`,
@@ -530,14 +544,17 @@ function renderCreate() {
           <p class="hint" id="cal-count" aria-live="polite"></p>
           <p class="hint">${t('autoDelete')}</p>
         </div>
-        <div class="field-row f-times">
-          <label class="field"><span>${t('from')}</span><select name="start">${hourOptions(9, 0, 23)}</select></label>
-          <label class="field"><span>${t('to')}</span><select name="end">${hourOptions(18, 1, 24)}</select></label>
-          <label class="field"><span>${t('interval')}</span>
-            <select name="slot">
-              ${[10, 15, 20, 30, 45, 60, 90, 120].map(m => `<option value="${m}"${m === 30 ? ' selected' : ''}>${fmtDuration(m)}</option>`).join('')}
-            </select>
-          </label>
+        <div class="f-times">
+          <label class="check"><input type="checkbox" name="daysOnly"><span>${t('daysOnly')}<small>${t('daysOnlyHint')}</small></span></label>
+          <div class="field-row" id="time-fields">
+            <label class="field"><span>${t('from')}</span><select name="start">${hourOptions(9, 0, 23)}</select></label>
+            <label class="field"><span>${t('to')}</span><select name="end">${hourOptions(18, 1, 24)}</select></label>
+            <label class="field"><span>${t('interval')}</span>
+              <select name="slot">
+                ${[10, 15, 20, 30, 45, 60, 90, 120].map(m => `<option value="${m}"${m === 30 ? ' selected' : ''}>${fmtDuration(m)}</option>`).join('')}
+              </select>
+            </label>
+          </div>
         </div>
         <label class="field f-tz">
           <span>${t('timezone')}</span>
@@ -629,6 +646,14 @@ function renderCreate() {
   });
   form.addEventListener('input', e => clearInvalid(e.target));
   form.addEventListener('change', e => clearInvalid(e.target));
+  // Solo giorni: niente fascia oraria né fuso orario.
+  const syncDaysOnly = () => {
+    const on = form.daysOnly.checked;
+    $('#time-fields').hidden = on;
+    form.querySelector('.f-tz').hidden = on;
+    if (on) [form.start, form.end, form.slot].forEach(clearInvalid);
+  };
+  form.daysOnly.addEventListener('change', syncDaysOnly);
   form.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
     weekOffset = Math.max(0, weekOffset + +btn.dataset.nav * 4);
     drawCal();
@@ -639,7 +664,10 @@ function renderCreate() {
     e.preventDefault();
     const err = $('#err');
     const title = form.title.value.trim();
-    const start = +form.start.value, end = +form.end.value;
+    const daysOnly = form.daysOnly.checked;
+    const start = daysOnly ? 0 : +form.start.value;
+    const end = daysOnly ? 1440 : +form.end.value;
+    const slotMinutes = daysOnly ? 1440 : +form.slot.value;
     const description = form.description.value.trim();
     const contact = {};
     const email = form.email.value.trim(), phone = form.phone.value.trim(), url = normalizeUrl(form.url.value);
@@ -650,7 +678,7 @@ function renderCreate() {
     if (!title) problems.push([form.title, t('errTitle')]);
     if (!selected.size) problems.push([cal, t('errDays')]);
     if (end <= start) problems.push([form.end, t('errTime')]);
-    else if (end - start < +form.slot.value) problems.push([form.slot, t('errInterval')]);
+    else if (end - start < slotMinutes) problems.push([form.slot, t('errInterval')]);
     if (email && !EMAIL_RE.test(email)) problems.push([form.email, t('errEmail')]);
     if (phone && phoneDigits(phone).replace('+', '').length < 6) problems.push([form.phone, t('errPhone')]);
     if (url === null) problems.push([form.url, t('errUrl')]);
@@ -675,8 +703,8 @@ function renderCreate() {
         dates: [...selected].sort(),
         start_minute: start,
         end_minute: end,
-        slot_minutes: +form.slot.value,
-        timezone: form.tz.value,
+        slot_minutes: slotMinutes,
+        timezone: daysOnly ? deviceTz : form.tz.value,
         // Inviati solo se compilati, così il sito funziona anche su database senza queste colonne.
         ...(description && { description }),
         ...(Object.keys(contact).length && { contact }),
@@ -704,7 +732,7 @@ function buildLayout(ev, viewTz) {
     // Solo slot interi dentro la fascia oraria (es. 2 h tra 9 e 18 → l'ultimo finisce alle 17).
     for (let m = ev.start_minute; m + ev.slot_minutes <= ev.end_minute; m += ev.slot_minutes) {
       const key = slotKey(d, m);
-      const pos = viewTz === ev.timezone ? { date: d, min: m } : utcToZoned(zonedToUtc(d, m, ev.timezone), viewTz);
+      const pos = viewTz === ev.timezone || isDaysOnly(ev) ? { date: d, min: m } : utcToZoned(zonedToUtc(d, m, ev.timezone), viewTz);
       slots.push({ key, ...pos });
     }
   }
@@ -734,6 +762,7 @@ async function renderEvent(id) {
   const L = buildLayout(ev, viewTz);
   const { dates, times } = L;
   const slot = ev.slot_minutes;
+  const daysOnly = isDaysOnly(ev);
 
   document.title = `${ev.title} · Whenly`;
   let responses = await store.listResponses(id);
@@ -766,17 +795,17 @@ async function renderEvent(id) {
   let minDuration = 0;
 
   app.innerHTML = `
-    <div class="event-page">
+    <div class="event-page${daysOnly ? ' days-only' : ''}">
     <div class="event-top">
     <header class="event-head">
       <div class="head-main">
         <h1>${esc(ev.title)}</h1>
         ${ev.description ? `<p class="event-desc">${esc(ev.description)}</p>` : ''}
         ${contactLinks(ev.contact)}
-        <p class="meta">${esc(fmtDateRange(dates))} · ${hhmm(times[0])}–${hhmm(times.at(-1) + slot)}
+        <p class="meta">${esc(fmtDateRange(dates))} · ${daysOnly ? t('allDay') : `${hhmm(times[0])}–${hhmm(times.at(-1) + slot)}`}
           · <span class="expiry" title="${esc(t('autoDelete'))}">${esc(t('expiresOn', F.dayLongMonth.format(expiry)))}</span></p>
       </div>
-      <div class="head-side">
+      <div class="head-side"${daysOnly ? ' hidden' : ''}>
         <label class="tz-pick"${viewTz !== ev.timezone ? ` title="${esc(t('createdIn', tzName(ev.timezone)))}"` : ''}>
           <span>${t('showTimesIn')}</span>
           <select id="view-tz">${timeZoneOptions(viewTz)}</select>
@@ -821,14 +850,14 @@ async function renderEvent(id) {
     </div>
     <section class="card best" id="best">
       <div class="row-between">
-        <h2>${t('bestTitle')}</h2>
-        <label class="cal-nav">${t('minDuration')}
+        <h2>${t(daysOnly ? 'bestDaysTitle' : 'bestTitle')}</h2>
+        <label class="cal-nav"${daysOnly ? ' hidden' : ''}>${t('minDuration')}
           <select id="min-dur" style="width:auto"><option value="0" selected>${t('allDurations')}</option>${durOptions.map(d => `<option value="${d}"${d === minDuration ? ' selected' : ''}>${fmtDuration(d)}</option>`).join('')}</select>
         </label>
       </div>
       <ol id="best-list"></ol>
     </section>
-    <button type="button" class="scroll-hint" id="scroll-hint" hidden>${ICONS.arrowDown}${t('bestTitle')}</button>
+    <button type="button" class="scroll-hint" id="scroll-hint" hidden>${ICONS.arrowDown}${t(daysOnly ? 'bestDaysTitle' : 'bestTitle')}</button>
     </div>`;
 
   $('#view-tz').addEventListener('change', e => {
@@ -911,7 +940,7 @@ async function renderEvent(id) {
       // Con intervalli che non dividono l'ora (45 min, 1 h 30, 2 h) ogni riga ha la sua etichetta.
       const onHour = afterGap || 60 % slot !== 0 || (m - times[0]) % 60 === 0;
       const gap = afterGap ? ' gap' : '';
-      h += `<div class="g-time${gap}${r === 0 ? ' first-label' : ''}"${onHour ? ` data-i="${labelIndex++}"` : ''}>${onHour ? hhmm(m) : ''}</div>`;
+      h += `<div class="g-time${gap}${r === 0 ? ' first-label' : ''}"${onHour && !daysOnly ? ` data-i="${labelIndex++}"` : ''}>${onHour && !daysOnly ? hhmm(m) : ''}</div>`;
       dates.forEach((d, c) => {
         const key = L.at(d, m);
         if (!key) { h += `<div class="g-empty${gap}"></div>`; return; }
@@ -920,7 +949,7 @@ async function renderEvent(id) {
         if (onHour) cls.push('hour');
         if (r === 0 || afterGap || !L.at(d, times[r - 1])) cls.push('first');
         if (r === times.length - 1 || beforeGap || !L.at(d, times[r + 1])) cls.push('last');
-        const label = esc(`${cap(F.long.format(parseDate(d)))}, ${hhmm(m)}–${hhmm(m + slot)}`);
+        const label = esc(daysOnly ? cap(F.long.format(parseDate(d))) : `${cap(F.long.format(parseDate(d)))}, ${hhmm(m)}–${hhmm(m + slot)}`);
         const aria = kind === 'mine' ? `role="checkbox" aria-checked="false"` : `role="button"`;
         h += `<div class="${cls.join(' ')}" data-k="${key}" data-c="${c}" data-r="${r}" tabindex="-1" ${aria} aria-label="${label}" data-label="${label}"></div>`;
       });
@@ -1001,7 +1030,7 @@ async function renderEvent(id) {
       </div>
       <div class="day-pager" data-pager></div>
       </div>
-      <p class="hint" id="paint-hint"><span class="hint-mouse">${t('paintHint')}</span><span class="hint-touch">${t('paintHintTouch')}</span> <span class="sr-only">${t('keyboardHint')}</span></p>
+      <p class="hint" id="paint-hint"><span class="hint-mouse">${t(daysOnly ? 'paintHintDays' : 'paintHint')}</span><span class="hint-touch">${t(daysOnly ? 'paintHintDaysTouch' : 'paintHintTouch')}</span> <span class="sr-only">${t('keyboardHint')}</span></p>
       <div class="grid-wrap"><div class="grid paint" id="my-grid" role="group" aria-label="${esc(t('yourAvailability'))}" aria-describedby="paint-hint" style="${gridCols()}">${gridHTML('mine')}</div></div>
       <p class="status" id="save-status" role="status"></p>`;
     const grid = $('#my-grid');
@@ -1148,7 +1177,7 @@ async function renderEvent(id) {
   function showHover(key, byKey, included) {
     groupGrid.querySelectorAll('.hover').forEach(el => el.classList.remove('hover'));
     if (!me) { hoverInfo.innerHTML = ''; return; }
-    if (!key || !included.length) { hoverInfo.innerHTML = `<span class="hi-line">${included.length ? t('hoverDefault') : t('noResponses')}</span>`; return; }
+    if (!key || !included.length) { hoverInfo.innerHTML = `<span class="hi-line">${included.length ? t(daysOnly ? 'hoverDefaultDays' : 'hoverDefault') : t('noResponses')}</span>`; return; }
     groupGrid.querySelector(`[data-k="${key}"]`)?.classList.add('hover');
     const { date, min } = L.pos(key);
     const yes = byKey.get(key);
@@ -1157,7 +1186,7 @@ async function renderEvent(id) {
     const yesText = yes.length ? `${t('available')}: ${yes.join(', ')}` : t('nobody');
     const noText = no.length ? `${t('unavailable')}: ${no.join(', ')}` : '';
     hoverInfo.innerHTML = `
-      <span class="hi-line"><b>${esc(cap(F.long.format(parseDate(date))))}, ${hhmm(min)}–${hhmm(min + slot)}</b> · ${yes.length}/${included.length}</span>
+      <span class="hi-line"><b>${esc(cap(F.long.format(parseDate(date))))}${daysOnly ? '' : `, ${hhmm(min)}–${hhmm(min + slot)}`}</b> · ${yes.length}/${included.length}</span>
       <span class="hi-line" title="${esc(yesText)}">${yes.length ? `${t('available')}: <b>${yes.map(esc).join(', ')}</b>` : t('nobody')}</span>
       <span class="hi-line" title="${esc(noText)}">${esc(noText)}</span>`;
   }
@@ -1239,7 +1268,7 @@ async function renderEvent(id) {
   function renderBest(byKey, included) {
     const list = $('#best-list');
     if (!included.length) {
-      list.innerHTML = `<p class="empty">${t('bestEmpty')}</p>`;
+      list.innerHTML = `<p class="empty">${t(daysOnly ? 'bestEmptyDays' : 'bestEmpty')}</p>`;
       return;
     }
     const minSlots = Math.max(1, Math.ceil(minDuration / slot));
@@ -1273,8 +1302,8 @@ async function renderEvent(id) {
       return `<li data-block="${i}">
         <span class="rank">${i + 1}</span>
         <div class="when">
-          <b>${esc(cap(F.long.format(parseDate(b.date))))} · ${hhmm(start)}–${hhmm(end)}</b>
-          <span>${fmtDuration(end - start)} · ${full ? t('everyone') : esc(t('missing', missing.join(', ')))}</span>
+          <b>${esc(cap(F.long.format(parseDate(b.date))))}${daysOnly ? '' : ` · ${hhmm(start)}–${hhmm(end)}`}</b>
+          <span>${daysOnly ? '' : `${fmtDuration(end - start)} · `}${full ? t('everyone') : esc(t('missing', missing.join(', ')))}</span>
         </div>
         <span class="score${full ? ' full' : ''}">${b.group.size}/${included.length}</span>
         ${isAdmin ? `<button type="button" class="btn small" data-confirm="${i}">${t('confirm')}</button>` : ''}
@@ -1282,7 +1311,10 @@ async function renderEvent(id) {
     }).join('');
 
     list.querySelectorAll('[data-confirm]').forEach(btn => btn.addEventListener('click', () => {
-      openConfirmEditor(btn.closest('li'), top[+btn.dataset.confirm]);
+      const b = top[+btn.dataset.confirm];
+      // Solo giorni: si conferma direttamente il giorno intero.
+      if (daysOnly) { btn.disabled = true; saveFinal({ start: b.slots[0].key, minutes: 1440 }, btn); return; }
+      openConfirmEditor(btn.closest('li'), b);
     }));
 
     list.querySelectorAll('[data-block]').forEach(li => {
@@ -1394,8 +1426,8 @@ async function renderEvent(id) {
       const links = calendarLinks(ev);
       html += `<div class="final-banner">
         <div class="final-when">
-          <span class="final-label">✓ ${t('confirmed')}</span>
-          <b>${esc(cap(fDate.format(start)))} · ${fTime.format(start)}–${fTime.format(end)}</b>
+          <span class="final-label">✓ ${t(daysOnly ? 'confirmedDay' : 'confirmed')}</span>
+          <b>${daysOnly ? esc(cap(F.long.format(parseDate(ev.final.start.slice(0, 10))))) : `${esc(cap(fDate.format(start)))} · ${fTime.format(start)}–${fTime.format(end)}`}</b>
         </div>
         <div class="final-actions">
           <span>${t('addToCalendar')}</span>
